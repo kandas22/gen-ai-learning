@@ -2,8 +2,9 @@
 
 This repository contains two Streamlit web applications:
 1. Simple Hello World App (`src/myapp.py`)
+   ![MyApp screenshot](assets/Myapp.png)
 2. Calculator App (`src/calculator.py`)
-
+  ![Calculator screenshot](assets/Calc.png)
 ## Project Structure
 
 ```
