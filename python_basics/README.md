@@ -272,6 +272,3 @@ print(for_loop_examples([1, 2, 3, 4]))
 4. Run tests to ensure everything works
 5. Submit a pull request
 
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
