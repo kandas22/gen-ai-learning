@@ -1,9 +1,10 @@
 # GenAI Learning
 
-This repository contains small, focused example projects for learning Python and browser automation using Playwright. It is organized into subdirectories; each subdirectory includes its own README with detailed usage notes and examples:
+This repository contains small, focused example projects for learning Python, browser automation using Playwright, and web application development using Streamlit. It is organized into subdirectories; each subdirectory includes its own README with detailed usage notes and examples:
 
 - `python_basics/` — small Python examples, exercises and tests.
 - `playwright_basics/` — Playwright-based browser automation examples and tests.
+- `streamlit_webapp/` — Interactive web applications built with Streamlit.
 
 Quick overview
 --------------
@@ -38,6 +39,41 @@ PYTHONPATH=./src python python_basics/examples/hello.py
 ```
 
 See `python_basics/README.md` for more examples, file-by-file descriptions, and extra notes.
+
+streamlit_webapp
+--------------
+
+The `streamlit_webapp/` directory contains interactive web applications built using Streamlit. It includes two example applications:
+
+1. Hello World App (`src/myapp.py`) - A simple greeting application demonstrating basic Streamlit features:
+   - Text input for user name
+   - Dynamic greeting updates
+   - Basic styling and layout
+
+2. Calculator App (`src/calculator.py`) - An interactive calculator with:
+   - Numeric input fields
+   - Operation selection (Addition, Subtraction, Multiplication, Division)
+   - Real-time calculation
+   - Error handling (e.g., division by zero)
+   - Styled UI elements
+
+Common commands (from streamlit_webapp directory):
+
+```bash
+# Install dependencies
+pip install -r requirements.txt
+
+# Run the Hello World app
+streamlit run src/myapp.py
+
+# Run the Calculator app
+streamlit run src/calculator.py
+
+# Run all tests
+pytest tests/
+```
+
+See `streamlit_webapp/README.md` for detailed setup instructions, testing guidelines, and troubleshooting tips.
 
 playwright_basics
 -----------------
