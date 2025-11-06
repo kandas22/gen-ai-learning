@@ -1,0 +1,17 @@
+Metadata-Version: 2.4
+Name: playwright_basics
+Version: 0.1.0
+Summary: Basic examples of Playwright automation framework usage
+Author-email: kanda <kanda@example.com>
+Project-URL: Homepage, https://github.com/yourusername/playwright_basics
+Project-URL: Bug Tracker, https://github.com/yourusername/playwright_basics/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: playwright>=1.40.0
+Requires-Dist: pytest>=7.4.0
+Requires-Dist: pytest-asyncio>=0.21.0
+Requires-Dist: pytest-playwright>=0.4.0
+Requires-Dist: aiohttp>=3.9.1
