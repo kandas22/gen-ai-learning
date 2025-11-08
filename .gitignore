@@ -3,3 +3,28 @@ __pycache__/
 *.pyc
 .venv/
 .env
+
+# Secrets and credentials (DO NOT COMMIT!)
+.env.sh
+*.env.sh
+.streamlit/secrets.toml
+**/secrets.toml
+*.pem
+*.key
+
+# Database files
+*.db
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
