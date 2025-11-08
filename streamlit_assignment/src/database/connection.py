@@ -43,3 +43,36 @@ def init_db(conn: sqlite3.Connection) -> None:
     """
     conn.execute(sql)
     conn.commit()
+
+
+def init_users_table(conn: sqlite3.Connection) -> None:
+    """
+    Initialize the users table for authentication.
+    Creates admin user with username 'admin' and password 'admin' if not exists.
+    
+    Args:
+        conn: SQLite database connection
+    """
+    sql = """
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        role TEXT NOT NULL DEFAULT 'user',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        created_by TEXT
+    );
+    """
+    conn.execute(sql)
+    conn.commit()
+    
+    # Check if admin exists, if not create it
+    cur = conn.cursor()
+    cur.execute("SELECT COUNT(*) as count FROM users WHERE username = 'admin'")
+    result = cur.fetchone()
+    if result[0] == 0:
+        cur.execute(
+            "INSERT INTO users (username, password, role, created_by) VALUES (?, ?, ?, ?)",
+            ("admin", "admin", "admin", "system")
+        )
+        conn.commit()
