@@ -6,6 +6,8 @@ This project demonstrates text generation using the Hugging Face Transformers li
 
 `ai_gp2.py` uses the GPT-2 model to generate text based on a given prompt. It creates a text generation pipeline and generates creative continuations of the input text.
 
+![GPT-2 Text Generation](image.png)
+
 ## Prerequisites
 
 - Python 3.7 or higher
