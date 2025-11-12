@@ -1,3 +1,0 @@
-timestamp,url,status_code,load_time_sec,time_alert,content_check,error_message
-2025-11-06 21:51:28,https://www.google.com/,200,1.65,False,False,Critical element missing.
-2025-11-06 21:51:28,https://playwright.dev/python/,200,1.26,False,False,Critical element missing.
