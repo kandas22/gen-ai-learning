@@ -1,15 +1,31 @@
-# Greeting Form - Streamlit App
+# Python Streamlit - 15 Days Challenge
 
-A simple Streamlit application that collects user information and displays a personalized greeting.
+A collection of bite-sized Streamlit projects, one per day, to sharpen UI skills and data handling with Python.
 
-## 15 Days Challenge Progress
+## Repository Layout
 
-Track your daily progress through the Python Streamlit challenge!
+```
+python_15_days_challenge/
+├── Day1/
+│   └── greeting_form.py
+├── Day2/
+│   └── expense_splitter.py
+├── README.md
+└── requirements.txt
+```
+
+Install the shared dependencies once:
+
+```bash
+pip install -r requirements.txt
+```
+
+## Progress Tracker
 
 | Day | Challenge | Status | Date Completed | Description |
 |-----|-----------|--------|----------------|-------------|
-| 1 | Greeting Form | ✅ Completed | Nov 11, 2025 | Built a form with name input, age slider, and personalized greeting display |
-| 2 | TBD | ⏳ Pending | - | Coming soon... |
+| 1 | Greeting Form | ✅ Completed | Nov 11, 2025 | Built a friendly form with name + age capture, dynamic greetings, and playful metrics |
+| 2 | Expense Splitter | ✅ Completed | Nov 13, 2025 | Split INR expenses with custom names, contributions, balances, and helpful charts |
 | 3 | TBD | ⏳ Pending | - | Coming soon... |
 | 4 | TBD | ⏳ Pending | - | Coming soon... |
 | 5 | TBD | ⏳ Pending | - | Coming soon... |
@@ -24,94 +40,37 @@ Track your daily progress through the Python Streamlit challenge!
 | 14 | TBD | ⏳ Pending | - | Coming soon... |
 | 15 | TBD | ⏳ Pending | - | Coming soon... |
 
-**Progress: 1/15 Days Completed (6.67%)** 🎉
+**Progress: 2/15 Days Completed (13.33%)** 🎉
 
 ---
 
-## Features
+## Day 1 – Greeting Form (`Day1/greeting_form.py`)
 
-- **Name Input**: Text field to enter your name
-- **Age Slider**: Interactive slider to select age (1-120 years)
-- **Personalized Greetings**: Age-appropriate greetings based on user input
-- **Fun Metrics**: Displays name length, age, and estimated days lived
-- **Interactive UI**: Clean form with validation and celebration effects
+- Name input, age slider, and custom greeting logic
+- Metrics that display name length, age, and estimated days lived
+- Balloons celebration and styled submit button
 
-## Prerequisites
-
-- Python 3.7 or higher
-- Streamlit
-
-## Installation
-
-Install the required dependency:
+Run it with:
 
 ```bash
-pip install streamlit
+streamlit run Day1/greeting_form.py
 ```
 
-## Usage
+---
 
-Run the Streamlit app:
+## Day 2 – Expense Splitter (`Day2/expense_splitter.py`)
+
+- Accepts INR totals, friend names, and per-person contributions
+- Computes equal share, detects who owes or should be reimbursed, and handles negative balances
+- Highlights discrepancies between total bill and contributions
+- Visualises balances and contribution comparisons using Plotly charts
+
+Launch it with:
 
 ```bash
-streamlit run greeting_form.py
+streamlit run Day2/expense_splitter.py
 ```
 
-The app will open in your default web browser (typically at `http://localhost:8501`).
+---
 
-## How to Use
-
-1. Enter your name in the text field
-2. Use the slider to select your age
-3. Click "Generate Greeting" button
-4. View your personalized greeting with fun metrics!
-
-## Features Breakdown
-
-### Form Components
-- **Text Input**: For entering name with placeholder text
-- **Slider**: Age selection from 1 to 120 years
-- **Submit Button**: Triggers form validation and greeting generation
-
-### Greeting Logic
-The app provides age-appropriate greetings:
-- Under 13: Kid-friendly greeting
-- 13-19: Teenage greeting
-- 20-29: Young adult greeting
-- 30-49: Professional greeting
-- 50-69: Wisdom-focused greeting
-- 70+: Life experience celebration
-
-### Additional Metrics
-- Name character count
-- Current age display
-- Approximate days lived calculation
-
-## Customization
-
-You can customize the greetings by modifying the age ranges and messages in the script:
-
-```python
-if age < 13:
-    greeting = "Your custom message here"
-```
-
-## Screenshots
-
-The app includes:
-- Clean, centered layout
-- Form validation
-- Success messages
-- Balloon animation on submission
-- Three-column metrics display
-
-## Notes
-
-- Name field cannot be empty (validation included)
-- Age defaults to 25 if not adjusted
-- Balloons appear on successful submission
-- Days lived calculation is approximate (365 days/year)
-
-## License
-
-Free to use and modify for learning purposes.
+More mini-apps dropping daily. Have a feature idea? Jot it down so we can turn it into tomorrow’s project. 🚀
