@@ -10,6 +10,8 @@ python_15_days_challenge/
 │   └── greeting_form.py
 ├── Day2/
 │   └── expense_splitter.py
+├── Day3/
+│   └── simple_calculator.py
 ├── README.md
 └── requirements.txt
 ```
@@ -26,7 +28,7 @@ pip install -r requirements.txt
 |-----|-----------|--------|----------------|-------------|
 | 1 | Greeting Form | ✅ Completed | Nov 11, 2025 | Built a friendly form with name + age capture, dynamic greetings, and playful metrics |
 | 2 | Expense Splitter | ✅ Completed | Nov 13, 2025 | Split INR expenses with custom names, contributions, balances, and helpful charts |
-| 3 | TBD | ⏳ Pending | - | Coming soon... |
+| 3 | Modern Calculator | ✅ Completed | Nov 14, 2025 | Responsive Streamlit calculator with instant results, zero-division guardrails, and a sleek glassmorphism UI |
 | 4 | TBD | ⏳ Pending | - | Coming soon... |
 | 5 | TBD | ⏳ Pending | - | Coming soon... |
 | 6 | TBD | ⏳ Pending | - | Coming soon... |
@@ -40,7 +42,7 @@ pip install -r requirements.txt
 | 14 | TBD | ⏳ Pending | - | Coming soon... |
 | 15 | TBD | ⏳ Pending | - | Coming soon... |
 
-**Progress: 2/15 Days Completed (13.33%)** 🎉
+**Progress: 3/15 Days Completed (20.00%)** 🎉
 
 ---
 
@@ -69,6 +71,21 @@ Launch it with:
 
 ```bash
 streamlit run Day2/expense_splitter.py
+```
+
+---
+
+## Day 3 – Modern Calculator (`Day3/simple_calculator.py`)
+
+- Two-number calculator with addition, subtraction, multiplication, and division
+- Sleek glassmorphism-inspired card design that updates results instantly
+- Handles negative values gracefully, color-coding results and flagging when outputs dip below zero
+- Blocks division-by-zero mistakes with helpful warnings and shares a safety checklist in the UI
+
+Spin it up with:
+
+```bash
+streamlit run Day3/simple_calculator.py
 ```
 
 ---
