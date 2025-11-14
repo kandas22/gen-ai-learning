@@ -12,6 +12,8 @@ python_15_days_challenge/
 │   └── expense_splitter.py
 ├── Day3/
 │   └── simple_calculator.py
+├── Day4/
+│   └── bmi_calculator.py
 ├── README.md
 └── requirements.txt
 ```
@@ -29,7 +31,7 @@ pip install -r requirements.txt
 | 1 | Greeting Form | ✅ Completed | Nov 11, 2025 | Built a friendly form with name + age capture, dynamic greetings, and playful metrics |
 | 2 | Expense Splitter | ✅ Completed | Nov 13, 2025 | Split INR expenses with custom names, contributions, balances, and helpful charts |
 | 3 | Modern Calculator | ✅ Completed | Nov 14, 2025 | Responsive Streamlit calculator with instant results, zero-division guardrails, and a sleek glassmorphism UI |
-| 4 | TBD | ⏳ Pending | - | Coming soon... |
+| 4 | BMI Calculator | ✅ Completed | Nov 14, 2025 | Professional BMI calculator with height (cm) & weight (kg) inputs, color-coded categories, and health recommendations |
 | 5 | TBD | ⏳ Pending | - | Coming soon... |
 | 6 | TBD | ⏳ Pending | - | Coming soon... |
 | 7 | TBD | ⏳ Pending | - | Coming soon... |
@@ -42,7 +44,7 @@ pip install -r requirements.txt
 | 14 | TBD | ⏳ Pending | - | Coming soon... |
 | 15 | TBD | ⏳ Pending | - | Coming soon... |
 
-**Progress: 3/15 Days Completed (20.00%)** 🎉
+**Progress: 4/15 Days Completed (26.67%)** 🎉
 
 ---
 
