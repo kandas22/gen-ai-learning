@@ -1,0 +1,160 @@
+{
+    "project": {
+        "title": "Unleashing GenAI: The 2-Week Transformation",
+        "total_duration": "64_seconds",
+        "style": "ultra_realistic_unreal_engine_cinematic",
+        "aspect_ratio": "16:9",
+        "segments": [
+            {
+                "segment_1": {
+                    "title": "DAY 0: The Void",
+                    "duration": "8_seconds",
+                    "veo_prompt": "Dark empty digital workspace, a south indian young single person staring at blank screen, cold blue lighting, light fog, camera slowly pushes forward through darkness, minimal UI elements flickering weakly, particle dust floating in volumetric light beam, Unreal Engine 5 quality, photorealistic, 8K, dramatic shadows, moody atmosphere",
+                    "voiceover_script": "Zero knowledge. Zero confidence. Just curiosity.",
+                    "text_overlay": "THE BEGINNING",
+                    "camera": "Slow push-in",
+                    "color_grade": "Cold blue, desaturated, high contrast",
+                    "assigned_to": "Team Member 1",
+                    "voice_style": "Deep, contemplative, mysterious tone",
+                    "voice_timing": "Speak slowly over 5 seconds, pause 3 seconds"
+                },
+                "segment_2": {
+                    "duration": "8_seconds",
+                    "title": "DAYS 1-3: First Spark",
+                    "visual_prompt": "Close-up hands to a south indian young single person typing first Python code, screen glows warm orange, digital particles begin materializing around fingers, camera orbits around workspace, holographic code snippets floating in air, neural network visualization forming in background",
+                    "narrative_beat": "First lines of code. The spark ignites.",
+                    "camera_movement": "orbital_360_around_subject",
+                    "lighting": "warm_orange_glow_transition",
+                    "vfx": "holographic_code_materialization",
+                    "emotion": "discovery_excitement",
+                    "voice_style": "Building excitement, hopeful tone",
+                    "voice_timing": "Speak over 4 seconds, energetic pacing"
+                },
+                "segment_3": {
+                    "duration": "8_seconds",
+                    "title": "DAYS 4-6: Neural Awakening",
+                    "visual_prompt": "A group of south indian young team members of four huddled around monitors, AI neural network visualization exploding with energy, bright electric blue and purple connections firing, camera whips between faces showing 'aha moments', holographic AI brain materializing above workspace, lightning-fast data streams",
+                    "narrative_beat": "Understanding clicks. Neural pathways connect.",
+                    "voiceover_script": "Understanding clicks. Neural pathways connect.",
+                    "voice_style": "Breakthrough moment, revelation tone with slight echo",
+                    "voice_timing": "Speak over 4 seconds with emphasis on 'clicks', pause 4 seconds",
+                    "voice_direction": "Start with realization, build to confident understanding",
+                    "camera_movement": "dynamic_whip_pan_between_subjects",
+                    "lighting": "electric_blue_purple_energy",
+                    "vfx": "neural_network_explosion",
+                    "emotion": "breakthrough_realization",
+                    "assigned_to": "Team Member 2"
+                },
+                "segment_4": {
+                    "duration": "8_seconds",
+                    "title": "DAYS 7-9: Prompt Mastery",
+                    "visual_prompt": "Split-screen rapid-fire prompt iterations with south indian team members visible in background, text materializing in 3D holographic space, each prompt transforming into visual outputs, camera zooms through cascading walls of glowing text, golden particles trailing typed words, reality-bending transformations as prompts reshape digital environment, same four south indian professionals from segment 3 working collaboratively, Unreal Engine 5 particle systems, depth of field, photorealistic text rendering, golden hour lighting",
+                    "narrative_beat": "Words become commands. Commands become reality.",
+                    "voiceover_script": "Words become commands. Commands become reality.",
+                    "voice_style": "Powerful, commanding, confident tone with authority",
+                    "voice_timing": "Speak over 5 seconds with dramatic pause between sentences, silence 3 seconds",
+                    "voice_direction": "First sentence assertive, second sentence with awe and power",
+                    "camera_movement": "fast_zoom_through_text_layers",
+                    "lighting": "golden_hour_magic_light",
+                    "vfx": "text_to_reality_transformation",
+                    "emotion": "mastery_control",
+                    "assigned_to": "Team Member 2",
+                    "continuity_note": "Same 4 south indian team members, now showing mastery and confidence"
+                },
+                "segment_5": {
+                    "duration": "8_seconds",
+                    "title": "DAYS 10-11: Image Genesis",
+                    "visual_prompt": "Cinematic spiral shot with four south indian team members surrounded by stunning AI-generated images exploding into existence in 3D space, photo-realistic renders materializing from digital particles, camera spirals upward through floating gallery of diverse AI art including landscapes portraits architecture creatures, vibrant colors, impossible geometries, the same four south indian professionals from previous segments reaching out to touch holographic floating creations with wonder on their faces, Unreal Engine 5 rendering, dreamlike atmosphere, particle materialization effects, depth of field, volumetric lighting",
+                    "narrative_beat": "Imagination visualized. Dreams rendered real.",
+                    "voiceover_script": "Imagination visualized. Dreams rendered real.",
+                    "voice_style": "Wonder-filled, awe-inspired, artistic tone",
+                    "voice_timing": "Speak over 5 seconds with dreamy quality, pause 3 seconds",
+                    "voice_direction": "Speak with childlike wonder and amazement",
+                    "camera_movement": "spiral_ascent_through_gallery",
+                    "lighting": "vibrant_multicolor_dreamscape",
+                    "vfx": "image_materialization_particles",
+                    "emotion": "wonder_creativity",
+                    "assigned_to": "Team Member 3",
+                    "continuity_note": "Same 4 south indian team members, expressions showing creative awakening"
+                },
+                "segment_6": {
+                    "duration": "8_seconds",
+                    "title": "DAYS 12-13: Motion Unleashed",
+                    "visual_prompt": "Cinematic barrel roll shot with the four south indian team members surrounded by multiple floating holographic video screens playing AI-generated cinematic sequences simultaneously, camera barrel-rolls through glowing portal effects connecting videos, each portal showing different epic scenes including nature sci-fi abstract motion, particle trails in motion, same south indian professionals from all previous segments now fully immersed in dynamic content creation, time-manipulation ripple effects, Unreal Engine 5 portal rendering, dramatic multi-source lighting, lens flares, photorealistic integration",
+                    "narrative_beat": "Static becomes motion. Stories come alive.",
+                    "voiceover_script": "Static becomes motion. Stories come alive.",
+                    "voice_style": "Dynamic, energetic, exhilarating tone",
+                    "voice_timing": "Speak over 4 seconds with building momentum, pause 4 seconds",
+                    "voice_direction": "Energetic with rising excitement",
+                    "camera_movement": "barrel_roll_through_video_portals",
+                    "lighting": "dynamic_multi_source_dramatic",
+                    "vfx": "portal_effects_time_distortion",
+                    "emotion": "exhilaration_momentum",
+                    "assigned_to": "Team Member 3",
+                    "continuity_note": "Same 4 south indian team members, showing mastery of video creation"
+                },
+                "segment_7": {
+                    "duration": "8_seconds",
+                    "title": "DAY 14: Convergence",
+                    "visual_prompt": "Epic cinematic crane shot of the same four south indian young professionals from all previous segments standing together in powerful superhero landing pose, massive holographic AI ecosystem orbiting around them like a planetary system with code strings neural networks images videos all rotating, camera cranes up dramatically revealing full scope, intense white-gold energy building and converging around the south indian team, lightning arcs connecting all elements, each team member clearly recognizable from earlier segments, Unreal Engine 5 cinematic quality, volumetric god rays, particle energy convergence, lens flares, photorealistic lighting, heroic composition",
+                    "narrative_beat": "Individuals united. Power amplified. Ready.",
+                    "voiceover_script": "Individuals united. Power amplified. Ready.",
+                    "voice_style": "Triumphant, powerful, heroic tone",
+                    "voice_timing": "Speak over 5 seconds with strong emphasis on each word, pause 3 seconds",
+                    "voice_direction": "Epic and triumphant, like a movie trailer climax",
+                    "camera_movement": "epic_crane_rise_hero_reveal",
+                    "lighting": "intense_white_gold_energy_burst",
+                    "vfx": "orbital_ecosystem_energy_convergence",
+                    "text_overlay": "DAY 14 - TRANSFORMED",
+                    "emotion": "triumph_empowerment",
+                    "assigned_to": "Team Member 4",
+                    "continuity_note": "All 4 south indian team members in hero pose, culmination of journey"
+                },
+                "segment_8": {
+                    "duration": "8_seconds",
+                    "title": "Beyond: The Future Awaits",
+                    "visual_prompt": "Cinematic pullback shot of the same four south indian team members walking confidently forward together into brilliant glowing digital horizon, massive futuristic AI-powered cityscape with towering holographic structures emerging ahead, infinite possibilities stretching into sky, camera pulls back to aerial gods eye view showing illuminated journey path behind them with all previous segment locations visible, the four south indian professionals clearly recognizable as the same team throughout entire journey, ending with explosive logo reveal made of golden particles, Unreal Engine 5 quality, epic scale, volumetric atmosphere, lens flares, photorealistic lighting, inspirational mood",
+                    "narrative_beat": "Fourteen days. Infinite possibilities. This is just the beginning.",
+                    "voiceover_script": "Fourteen days. Infinite possibilities. This is just the beginning.",
+                    "voice_style": "Inspiring, hopeful, epic closing tone",
+                    "voice_timing": "Speak over 6 seconds with building inspiration, pause 2 seconds for logo impact",
+                    "voice_direction": "Inspirational finale with hope for the future",
+                    "camera_movement": "pullback_to_gods_eye_view",
+                    "lighting": "brilliant_sunrise_hope_lighting",
+                    "vfx": "explosive_logo_particle_reveal",
+                    "text_overlay": "THE JOURNEY CONTINUES",
+                    "emotion": "hope_limitless_potential",
+                    "assigned_to": "Team Member 4",
+                    "continuity_note": "Same 4 south indian team members, final hero walk into future",
+                    "gratitude_note": "With heartfelt gratitude to Social Eagle for guiding and inspiring this GenAI journey."
+                },
+                "segment_9": {
+                    "title": "Beyond: Welcome to Social Eagle's GenAI Future",
+                    "visual_prompt": "A majestic eagle soars upward into a stormy, dark sky. Intense thunderclouds swirl dramatically around it, illuminated by sudden flashes of lightning. The camera follows the eagle in slow motion as it spreads its wings wide, rising higher through the turbulent atmosphere. Dark, moody colors dominate the scene, with glowing electric arcs and dramatic cinematic lighting. Ultra-realistic, high detail, epic and powerful atmosphere.",
+                    "narrative_beat": "Welcome to Social Eagle's GenAI Future.",
+                    "voiceover_script": "Welcome to Social Eagle’s GenAI Future Learning community—where we grow together. What we know is just a drop; what remains unknown is an ocean waiting to be explored.",
+                    "voice_style": "Inspiring, hopeful, epic closing tone",
+                    "voice_timing": "Speak over 6 seconds with building inspiration, pause 2 seconds for logo impact",
+                    "voice_direction": "Inspirational finale with hope for the future",
+                    "camera_movement": "pullback_to_gods_eye_view",
+                    "lighting": "brilliant_sunrise_hope_lighting",
+                    "vfx": "explosive_logo_particle_reveal",
+                    "text_overlay": "Social Eagle",
+                    "emotion": "hope_limitless_potential",
+                    "assigned_to": "Team Member 1",
+                    "gratitude_note": "With heartfelt gratitude to Social Eagle for guiding and inspiring this GenAI journey."
+                }
+            }
+        ],
+        "audio_direction": {
+            "music_style": "epic_orchestral_hybrid_electronic",
+            "build_pattern": "crescendo_from_silence_to_triumph",
+            "sound_design": "heavy_cinematic_impacts_whooshes_digital_glitches"
+        },
+        "color_grading": {
+            "progression": "cold_blue_to_warm_gold",
+            "contrast": "high_dynamic_range",
+            "saturation": "progressively_increasing"
+        }
+    }
+}
