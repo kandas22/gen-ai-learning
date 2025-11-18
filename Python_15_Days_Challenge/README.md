@@ -14,6 +14,8 @@ python_15_days_challenge/
 │   └── simple_calculator.py
 ├── Day4/
 │   └── bmi_calculator.py
+├── Day5/
+│   └── unit_converter.py
 ├── README.md
 └── requirements.txt
 ```
@@ -32,7 +34,7 @@ pip install -r requirements.txt
 | 2 | Expense Splitter | ✅ Completed | Nov 13, 2025 | Split INR expenses with custom names, contributions, balances, and helpful charts |
 | 3 | Modern Calculator | ✅ Completed | Nov 14, 2025 | Responsive Streamlit calculator with instant results, zero-division guardrails, and a sleek glassmorphism UI |
 | 4 | BMI Calculator | ✅ Completed | Nov 14, 2025 | Professional BMI calculator with height (cm) & weight (kg) inputs, color-coded categories, and health recommendations |
-| 5 | TBD | ⏳ Pending | - | Coming soon... |
+| 5 | Unit Converter | ✅ Completed | Nov 18, 2025 | Multi-unit converter supporting length, weight, temperature, and volume conversions with real-time results |
 | 6 | TBD | ⏳ Pending | - | Coming soon... |
 | 7 | TBD | ⏳ Pending | - | Coming soon... |
 | 8 | TBD | ⏳ Pending | - | Coming soon... |
@@ -44,7 +46,7 @@ pip install -r requirements.txt
 | 14 | TBD | ⏳ Pending | - | Coming soon... |
 | 15 | TBD | ⏳ Pending | - | Coming soon... |
 
-**Progress: 4/15 Days Completed (26.67%)** 🎉
+**Progress: 5/15 Days Completed (33.33%)** 🎉
 
 ---
 
@@ -88,6 +90,38 @@ Spin it up with:
 
 ```bash
 streamlit run Day3/simple_calculator.py
+```
+
+---
+
+## Day 4 – BMI Calculator (`Day4/bmi_calculator.py`)
+
+- Height (cm) and weight (kg) input fields with validation
+- Calculates Body Mass Index using the standard formula: BMI = weight / height²
+- Categorizes results into Underweight, Normal, Overweight, and Obese with color-coded visual cards
+- Displays personalized health recommendations and detailed calculation breakdown
+- Reference metrics showing all BMI category ranges with emoji indicators
+
+Run it with:
+
+```bash
+streamlit run Day4/bmi_calculator.py
+```
+
+---
+
+## Day 5 – Unit Converter (`Day5/unit_converter.py`)
+
+- Multi-category converter supporting Length, Weight, Temperature, and Volume
+- Dynamic unit selection based on chosen category
+- Real-time conversion with precise decimal results
+- Clean interface with categorized dropdowns and instant calculation
+- Supports common units: meters, feet, kilometers, grams, kilograms, Celsius, Fahrenheit, liters, gallons
+
+Launch it with:
+
+```bash
+streamlit run Day5/unit_converter.py
 ```
 
 ---
