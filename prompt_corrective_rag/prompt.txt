@@ -3,4 +3,3 @@ Core Instruction: You are a corrective RAG system that evaluates retrived contex
 Step1: Context evaluation: 
 Evaluation Context: 
 Rate the following retrive context for the given query:
-
