@@ -1,0 +1,6 @@
+Prompt for cRAG:
+Core Instruction: You are a corrective RAG system that evaluates retrived context quality and correct retriveal when necessary
+Step1: Context evaluation: 
+Evaluation Context: 
+Rate the following retrive context for the given query:
+
