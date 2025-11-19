@@ -16,6 +16,8 @@ python_15_days_challenge/
 │   └── bmi_calculator.py
 ├── Day5/
 │   └── unit_converter.py
+├── Day6/
+│   └── water_tracker.py
 ├── README.md
 └── requirements.txt
 ```
@@ -35,7 +37,7 @@ pip install -r requirements.txt
 | 3 | Modern Calculator | ✅ Completed | Nov 14, 2025 | Responsive Streamlit calculator with instant results, zero-division guardrails, and a sleek glassmorphism UI |
 | 4 | BMI Calculator | ✅ Completed | Nov 14, 2025 | Professional BMI calculator with height (cm) & weight (kg) inputs, color-coded categories, and health recommendations |
 | 5 | Unit Converter | ✅ Completed | Nov 18, 2025 | Multi-unit converter supporting length, weight, temperature, and volume conversions with real-time results |
-| 6 | TBD | ⏳ Pending | - | Coming soon... |
+| 6 | Water Intake Tracker | ✅ Completed | Nov 19, 2025 | Track daily water intake with 3L goal, quick-add buttons (250/500/750/1000ml), weekly Plotly chart, and JSON persistence |
 | 7 | TBD | ⏳ Pending | - | Coming soon... |
 | 8 | TBD | ⏳ Pending | - | Coming soon... |
 | 9 | TBD | ⏳ Pending | - | Coming soon... |
@@ -46,7 +48,7 @@ pip install -r requirements.txt
 | 14 | TBD | ⏳ Pending | - | Coming soon... |
 | 15 | TBD | ⏳ Pending | - | Coming soon... |
 
-**Progress: 5/15 Days Completed (33.33%)** 🎉
+**Progress: 6/15 Days Completed (40.00%)** 🎉
 
 ---
 
@@ -122,6 +124,27 @@ Launch it with:
 
 ```bash
 streamlit run Day5/unit_converter.py
+```
+
+---
+
+## Day 6 – Water Intake Tracker 💧 (`Day6/water_tracker.py`)
+
+- Track daily water intake with a 3000ml (3L) goal
+- Quick-add buttons for common amounts: 🥤 250ml, 🍶 500ml, 💧 750ml, 🥛 1000ml
+- Custom amount input (50-2000ml) with add/remove/reset functionality
+- Real-time progress bar and percentage display
+- Goal celebration with green gradient card when 3L is reached
+- Weekly 7-day hydration chart using Plotly with color-coded bars (green = goal met, blue = in progress)
+- Weekly statistics: total, average, days goal met
+- Data persistence in JSON format (water_data.json)
+- Three-column layout: progress monitoring | logging & chart | hydration tips
+- Includes hydration benefits, tips to drink more water, and recommended daily schedule
+
+Run it with:
+
+```bash
+streamlit run Day6/water_tracker.py
 ```
 
 ---
