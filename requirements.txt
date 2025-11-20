@@ -128,7 +128,7 @@ pytest==8.4.2
 pytest-asyncio==0.21.0
 pytest-base-url==2.1.0
 pytest-cov==7.0.0
-pytest-playwright==0.4.0
+pytest-playwright==0.7.1
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
 python-slugify==8.0.4
@@ -186,3 +186,5 @@ xxhash==3.6.0
 yarl==1.22.0
 zipp==3.23.0
 zstandard==0.25.0
+
+matplotlib
