@@ -18,6 +18,13 @@ python_15_days_challenge/
 │   └── unit_converter.py
 ├── Day6/
 │   └── water_tracker.py
+├── Day7/
+│   └── gym_workout_logger/
+│       ├── app.py
+│       ├── data_manager.py
+│       ├── workouts.csv
+│       ├── requirements.txt
+│       └── README.md
 ├── README.md
 └── requirements.txt
 ```
@@ -38,7 +45,7 @@ pip install -r requirements.txt
 | 4 | BMI Calculator | ✅ Completed | Nov 14, 2025 | Professional BMI calculator with height (cm) & weight (kg) inputs, color-coded categories, and health recommendations |
 | 5 | Unit Converter | ✅ Completed | Nov 18, 2025 | Multi-unit converter supporting length, weight, temperature, and volume conversions with real-time results |
 | 6 | Water Intake Tracker | ✅ Completed | Nov 19, 2025 | Track daily water intake with 3L goal, quick-add buttons (250/500/750/1000ml), weekly Plotly chart, and JSON persistence |
-| 7 | TBD | ⏳ Pending | - | Coming soon... |
+| 7 | Gym Workout Logger | ✅ Completed | Nov 20, 2025 | Log workouts with dynamic inputs (Sets/Reps/Weight for strength, Duration for planks, Distance/Duration for cardio), searchable exercise dropdown, and weekly progress charts |
 | 8 | TBD | ⏳ Pending | - | Coming soon... |
 | 9 | TBD | ⏳ Pending | - | Coming soon... |
 | 10 | TBD | ⏳ Pending | - | Coming soon... |
@@ -48,7 +55,7 @@ pip install -r requirements.txt
 | 14 | TBD | ⏳ Pending | - | Coming soon... |
 | 15 | TBD | ⏳ Pending | - | Coming soon... |
 
-**Progress: 6/15 Days Completed (40.00%)** 🎉
+**Progress: 7/15 Days Completed (46.67%)** 🎉
 
 ---
 
@@ -145,6 +152,27 @@ Run it with:
 
 ```bash
 streamlit run Day6/water_tracker.py
+```
+
+---
+
+## Day 7 – Gym Workout Logger 🏋️‍♂️ (`Day7/gym_workout_logger/app.py`)
+
+- **Searchable Exercise Dropdown**: Select from 20+ common exercises (Bench Press, Squat, Deadlift, Running, Plank, etc.) or enter custom exercises
+- **Dynamic Input Fields**: Form adapts based on exercise type:
+  - **Strength exercises** (Bench Press, Squat, etc.): Sets, Reps, Weight (kg)
+  - **Duration exercises** (Plank, Jump Rope): Sets, Duration (minutes)
+  - **Cardio exercises** (Running, Cycling): Duration (minutes), Distance (km)
+- **Data Persistence**: All workouts saved to CSV with automatic schema migration for new columns
+- **Progress Tracking**: Weekly weight progression charts using Plotly for each exercise
+- **Recent Workouts Table**: View all logged workouts sorted by date
+- **Clean UI**: Light-themed interface with custom CSS styling
+
+Run it with:
+
+```bash
+cd Day7/gym_workout_logger
+streamlit run app.py
 ```
 
 ---
