@@ -3,11 +3,11 @@ services:
     image: neo4j:5.23.0
     container_name: neo4j-kg-demo
     ports:
-      - "7474:7474" # HTTP - Neo4j Browser
-      - "7687:7687" # Bolt - Database connection
+      - "7474:7474"  # HTTP - Neo4j Browser
+      - "7687:7687"  # Bolt - Database connection
     environment:
       # Authentication
-      - NEO4J_AUTH=neo4j/demo1234
+      - NEO4J_AUTH=neo4j/knowledge_graph_demo_2024
 
       # Plugins
       - NEO4J_PLUGINS=["apoc"]
@@ -28,7 +28,7 @@ services:
       - neo4j_plugins:/plugins
 
     healthcheck:
-      test: [ "CMD", "cypher-shell", "-u", "neo4j", "-p", "demo1234", "RETURN 1" ]
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "knowledge_graph_demo_2024", "RETURN 1"]
       interval: 10s
       timeout: 10s
       retries: 5

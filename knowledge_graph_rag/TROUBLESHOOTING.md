@@ -56,12 +56,12 @@ The client is unauthorized due to authentication failure
 Check `.env` file has correct credentials:
 ```
 NEO4J_USERNAME=neo4j
-NEO4J_PASSWORD=knowledge_graph_demo_2024
+NEO4J_PASSWORD=demo1234
 ```
 
 Must match `docker-compose.yml`:
 ```yaml
-NEO4J_AUTH=neo4j/knowledge_graph_demo_2024
+NEO4J_AUTH=neo4j/demo1234
 ```
 
 ### Neo4j Browser Won't Load
@@ -644,7 +644,7 @@ docker-compose up -d
    # Test Neo4j
    from neo4j import GraphDatabase
    driver = GraphDatabase.driver("bolt://localhost:7687",
-                                  auth=("neo4j", "knowledge_graph_demo_2024"))
+                                  auth=("neo4j", "demo1234"))
    driver.verify_connectivity()
 
    # Test OpenAI

@@ -22,7 +22,7 @@ You should see `neo4j-kg-demo` running on ports 7474 and 7687.
 
 **Optional**: Open http://localhost:7474 in your browser to access Neo4j Browser
 - Username: `neo4j`
-- Password: `knowledge_graph_demo_2024`
+- Password: `demo1234`
 
 ## Step 2: Set Up Python Environment (2 minutes)
 

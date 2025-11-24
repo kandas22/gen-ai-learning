@@ -25,9 +25,10 @@ echo "✓ Docker found"
 echo
 
 # Create virtual environment
+# Create virtual environment
 echo "[3/5] Creating Python virtual environment..."
-if [ ! -d "venv" ]; then
-    python3 -m venv venv
+if [ ! -d ".venv" ]; then
+    python3 -m venv .venv
     echo "✓ Virtual environment created"
 else
     echo "✓ Virtual environment already exists"
@@ -36,7 +37,7 @@ echo
 
 # Activate and install packages
 echo "[4/5] Installing Python packages..."
-source venv/bin/activate
+source .venv/bin/activate
 python -m pip install --upgrade pip --quiet
 pip install -r requirements.txt --quiet
 echo "✓ Packages installed"
@@ -60,15 +61,9 @@ if [ ! -f ".env" ]; then
 fi
 
 echo "========================================"
-echo "Setup Complete!"
+echo "Setup Complete! Starting App..."
 echo "========================================"
 echo
-echo "Next steps:"
-echo "1. Edit .env and add your OpenAI API key"
-echo "2. Run: source .venv/bin/activate"
-echo "3. Run: python demo.py"
-echo
-echo "Neo4j Browser: http://localhost:7474"
-echo "  Username: neo4j"
-echo "  Password: knowledge_graph_demo_2024"
-echo
+
+# Start Streamlit
+streamlit run ui/app.py
