@@ -74,6 +74,6 @@ echo 2. Run: python demo.py
 echo.
 echo Neo4j Browser: http://localhost:7474
 echo   Username: neo4j
-echo   Password: knowledge_graph_demo_2024
+echo   Password: demo1234
 echo.
 pause
