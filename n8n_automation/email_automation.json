@@ -1,0 +1,229 @@
+{
+  "name": "N8N_Task1",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "eee06b93-3a1d-4b86-8162-81d4f3c12f09",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1rQSDF6sMP42GCJzGvunW5pHr80Rfxd5O1VySkBZclCY",
+          "mode": "list",
+          "cachedResultName": "trigger_email",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rQSDF6sMP42GCJzGvunW5pHr80Rfxd5O1VySkBZclCY/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rQSDF6sMP42GCJzGvunW5pHr80Rfxd5O1VySkBZclCY/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        256,
+        0
+      ],
+      "id": "1d554931-e8e8-4c5b-8447-35e0f8266cad",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1keOlv6SsyptZzs7",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a0772ba5-93fc-434e-b8bc-d3232ec14e93",
+              "name": "Customer Name",
+              "value": "={{ $json['Customer Name'] }}",
+              "type": "string"
+            },
+            {
+              "id": "b91cb870-a9fb-4a65-b011-f1f468b10be9",
+              "name": "Email ID",
+              "value": "={{ $json['Email ID'] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        464,
+        0
+      ],
+      "id": "b9d57efb-07b4-4dbc-b4ae-bca87ffdb6ab",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Get row(s) in sheet').item.json['Email ID'] }}",
+        "subject": "Thank You for Staying With GenAI4Titans — We Hope to Welcome You Again",
+        "message": "={{ $json.output[0].content[0].text }}",
+        "options": {
+          "senderName": "GenAI4Titans Team"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        1328,
+        0
+      ],
+      "id": "aab33124-63d3-44ea-aa97-c582f0f3057b",
+      "name": "Send a message",
+      "webhookId": "2899b8d6-eea8-4eea-9e05-b76c1d811e81",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hoTc8s9AaZrvBUmX",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4.1-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4.1-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "role": "system",
+              "content": "=You are an expert Email Communication Specialist and Hospitality Content Formatter.\nYour task is to generate a polished, high-standard business email for a homestay named Silver Nest.\n\nPrimary Objective\n\nCreate a warm, professional, and aesthetically impressive post-stay Thank You email for a guest.\n\nFormatting Rules\n\nDo not use “#” anywhere in the email.\n\nUse clean, simple, elegant formatting suitable for a Gmail HTML email.\n\nNo markdown code blocks.\n\nUse bold text, line breaks, and horizontal rules (<hr>) to visually structure the email.\n\nMaintain a warm, appreciative, and upscale hospitality tone.\n\nEmail Structure (Mandatory)\n\nYour output must include the following sections in order:\n\nPersonalized Greeting\nExample: “Thank you for staying with Silver Nest, {{ $json['Customer Name'] }}”\n\nGratitude & Stay Appreciation\nA warm message thanking the guest for choosing Silver Nest and trusting the property.\n\nImage Placeholder Section\n\nShare Experience / Word-of-Mouth CTA\nEncourage the guest to share feedback or recommend Silver Nest to friends & family.\n\nInvitation to Return\nProvide a warm welcome for future stays.\n\nSignature Block\nUse placeholders:\nWarm regards,\n[GenAI4 Titants]\n[Always here to help]\n[genai4titans@google.com]\n\nFormal Disclaimer\nPolished confidentiality statement.\n\nContent Required\n\nRewrite the message into an improved, premium-quality version, suitable for hospitality businesses that value:\n\nPersonal warmth\n\nProfessional presentation\n\nTrust building\n\nRepeat stays\n\nHigh-end guest experience\n\nCustomer Name\n\nUse this variable where necessary:\n{{ $json['Customer Name'] }}\n\nDeliver the final output as clean HTML-friendly formatting with no markdown syntax.\n\nImage path : (https://as2.ftcdn.net/v2/jpg/05/05/39/07/1000_F_505390776_8ilykzGiVSpIjUqdEXFhDY1ACRJZPDRD.jpg)"
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        688,
+        0
+      ],
+      "id": "cc84c040-656d-4c5d-9d5e-8780f5385652",
+      "name": "Message a model",
+      "credentials": {
+        "openAiApi": {
+          "id": "pNYnecEsStzPJ3lW",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "markdownToHtml",
+        "markdown": "={{ $json.output[0].content[0].text }}\n![My Image](https://as2.ftcdn.net/v2/jpg/05/05/39/07/1000_F_505390776_8ilykzGiVSpIjUqdEXFhDY1ACRJZPDRD.jpg)\n",
+        "destinationKey": "=",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.markdown",
+      "typeVersion": 1,
+      "position": [
+        1040,
+        0
+      ],
+      "id": "d1fc54c3-efa4-4144-9d2f-769584db20d5",
+      "name": "Markdown"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Markdown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "07edea4c-6325-4fb2-b317-25f3e3806014",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5560c8cbaa1f4e0a42266f42081145a8b8f9393bba28c3decb2c25e9c460056"
+  },
+  "id": "OMrCa6KLzWCLUA0h",
+  "tags": [
+    {
+      "updatedAt": "2025-12-06T05:42:18.605Z",
+      "createdAt": "2025-12-06T05:42:18.605Z",
+      "id": "4VM9VNaRxWE9w0v2",
+      "name": "Assignment -1"
+    }
+  ]
+}

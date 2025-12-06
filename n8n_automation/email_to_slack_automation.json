@@ -1,0 +1,299 @@
+{
+  "name": "N8n Automation",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -848,
+        -176
+      ],
+      "id": "8338280b-1ab5-4bf2-a942-31894125c284",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 1,
+        "filters": {
+          "includeSpamTrash": true,
+          "sender": "kandas22@gmail.com"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -608,
+        -176
+      ],
+      "id": "402658bc-e9b8-452d-a53f-16db366c7ea8",
+      "name": "Get many messages",
+      "webhookId": "d9eb062c-d640-4a32-91a5-31b08ebeb0a1",
+      "alwaysOutputData": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "hoTc8s9AaZrvBUmX",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0A1WCL1LBG",
+          "mode": "list",
+          "cachedResultName": "genai4-titans"
+        },
+        "messageType": "block",
+        "blocksUi": "={\n    \"blocks\": [\n        {\n            \"type\": \"header\",\n            \"text\": {\n                \"type\": \"plain_text\",\n                \"text\": \"{{ $json.Subject }}\",\n                \"emoji\": true\n            }\n        },\n        {\n            \"type\": \"section\",\n            \"fields\": [\n                {\n                    \"type\": \"mrkdwn\",\n                    \"text\": \"*Customer:*\\n {{ $json.From }}\"\n                },\n                {\n                    \"type\": \"mrkdwn\",\n                    \"text\": \"*Email:*\\n{{ $json.FromEmail }}\"\n                },\n                {\n                    \"type\": \"mrkdwn\",\n                    \"text\": \"*Request ID:*\\n{{ $json.TicketID }}\"\n                },\n                {\n                    \"type\": \"mrkdwn\",\n                    \"text\": \"*Priority:*\\n{{ $json.Status }}\"\n                }\n            ]\n        },\n        {\n            \"type\": \"section\",\n            \"text\": {\n                \"type\": \"mrkdwn\",\n                \"text\": \"*Issue Description:*\\n {{ $json.Snippet }}\"\n            }\n        },\n        {\n            \"type\": \"context\",\n            \"elements\": [\n                {\n                    \"type\": \"mrkdwn\",\n                    \"text\": \"📅 Submitted at SocialEagle via email\"\n                }\n            ]\n        },\n        {\n            \"type\": \"divider\"\n        },\n        {\n            \"type\": \"actions\",\n            \"elements\": [\n                {\n                    \"type\": \"button\",\n                    \"text\": {\n                        \"type\": \"plain_text\",\n                        \"text\": \"View Ticket\",\n                        \"emoji\": true\n                    },\n                    \"url\": \"https://google.com\",\n                    \"style\": \"primary\"\n                },\n                {\n                    \"type\": \"button\",\n                    \"text\": {\n                        \"type\": \"plain_text\",\n                        \"text\": \"Assign to Me\",\n                        \"emoji\": true\n                    },\n                    \"action_id\": \"assign_ticket\"\n                }\n            ]\n        }\n    ]\n}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        320,
+        -176
+      ],
+      "id": "d1d371d6-c91d-413c-bb5a-cd148e94ec78",
+      "name": "Send a message",
+      "webhookId": "91ec3b2e-b550-4a75-ae7c-34b041c4fd88",
+      "alwaysOutputData": true,
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "3F4RvH0qG8CadWoD",
+          "name": "Slack account 4"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const out = [];\n\nfor (const item of $input.all()) {\n  const raw = item.json.From || item.json.from || '';\n  const emailMatch = (raw.match(/<([^>]+)>/) || [])[1];\n  const email = emailMatch ? emailMatch.trim() : (raw.includes('@') ? raw.trim() : '');\n  let name = raw.replace(/<[^>]*>/g, '').replace(/\"/g, '').trim();\n  if ((!name || name === '') && email) name = email.split('@')[0];\n\n  out.push({\n    json: {\n      ...item.json,\n      UserName: name,\n      Email: email,\n    }\n  });\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -336,
+        -176
+      ],
+      "id": "7ee5cfb8-6f58-402a-9268-1f92942efbe5",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n Code node (JavaScript)\n// Input: the incoming item(s) contain the Slack blocks JSON in item.json\n// Output: item.json will be augmented with the Ticket fields to write to Sheets/Excel.\n\nconst out = [];\n\nfor (const item of $input.all()) {\n  const src = item.json || {};\n  const blocks = src.blocks || [];\n\n  // Header (subject)\n  const headerBlock = blocks.find(b => b.type === 'header');\n  // const subject = headerBlock?.text?.text || '';\n  const subject = $input.first().json.Subject;\n\n  // Find first section that contains fields (the fields array from your template)\n  const fieldsSection = blocks.find(b => b.type === 'section' && Array.isArray(b.fields));\n  const fields = fieldsSection?.fields || [];\n\n  // Helper to safely get field text by label\n  const findFieldText = (label) => {\n    const f = fields.find(ff => (ff.text || '').includes(label));\n    return f ? (f.text || '') : '';\n  };\n\n  // Try to extract ticket id from Request ID field\n  let ticketId = '';\n  const reqText = findFieldText('Request ID') || findFieldText('RequestID') || '';\n  if (reqText) {\n    // extract contiguous digits\n    const digits = reqText.match(/\\d{6,}/);\n    if (digits) ticketId = digits[0];\n  }\n  // fallback to provided JSON value if present\n  if (!ticketId) ticketId = src.requestId || src.ticketId || '';\n\n  // CreatedAt derived from TicketID prefix if possible (YYYYMMDD...), else today\n  let createdAt = '';\n  if (ticketId && ticketId.length >= 8) {\n    const d = ticketId.slice(0,8); // YYYYMMDD\n    createdAt = `${d.slice(0,4)}-${d.slice(4,6)}-${d.slice(6,8)}`;\n  } else {\n    createdAt = (new Date()).toISOString().slice(0,10);\n  }\n\n  // From/from email - prefer direct JSON fields if available\n  const from = src.From || src.from || (() => {\n    // parse markdown field \"*Customer:*\\n{{ $json.From }}\" or \"*Email:*\"\n    const f1 = findFieldText('*Customer:*') || findFieldText('*Customer:*\\\\') || '';\n    const f2 = findFieldText('*Email:*') || '';\n    // crude extraction: take everything after the last newline\n    const extract = (t) => {\n      const m = t.split('\\n').pop().trim();\n      return m.replace(/\\*/g,'').replace(/\\\\\\{|\\{|\\}/g,'').trim();\n    };\n    return extract(f1) || extract(f2) || '';\n  })();\n\n  const fromEmail = src.FromEmail || src.fromEmail || from || (src.email || '');\n\n  // Snippet - try src.snippet, else parse the section text that uses snippet\n  let snippet = src.snippet || '';\n  if (!snippet) {\n    const snippetSection = blocks.find(b => b.type === 'section' && b.text && b.text.text && b.text.text.includes('{{ $json.snippet'));\n    if (snippetSection) snippet = '{{ $json.snippet }}';\n  }\n\n  // Body - look for the textual description (a section with text)\n  let body = '';\n  const issueSection = blocks.find(b => b.type === 'section' && b.text && b.text.text && b.text.text.includes('Issue Description') === false);\n  // fallback: combine non-header, non-actions text blocks excluding fields block\n  if (!body) {\n    // try to find the short line present in the fields (first fields item sometimes contains issue sentence)\n    const candidate = fields.map(f => f.text).join('\\n');\n    if (candidate && candidate.includes('The user interface')) {\n      // remove markdown labels like *Customer:* etc.\n      body = candidate.replace(/\\*\\w+:\\*/g,'').replace(/\\\\n/g,'\\n').trim();\n    }\n  }\n  // more robust: look for any block containing plain sentence (example from provided JSON)\n  if (!body) {\n    const anyTextBlock = blocks.find(b => b.type === 'section' && b.text && /user interface|does not|not allow/i.test(b.text.text));\n    if (anyTextBlock) {\n      body = anyTextBlock.text.text.replace(/\\{\\{.*\\}\\}/g,'').trim();\n    }\n  }\n  if (!body) body = src.body || '';\n\n  // Status/priority\n  let priority = '';\n  const pr = findFieldText('Priority') || findFieldText('*Priority:*') || '';\n  if (pr) {\n    const p = pr.match(/P\\d/);\n    priority = p ? p[0] : pr.trim();\n  }\n  if (!priority) priority = src.priority || 'P1';\n  const status = `${priority} / Open`;\n\n  // Final item\n  const result = {\n    TicketID: ticketId || (new Date().getTime().toString()), // ensure something\n    CreatedAt: createdAt,\n    From: from || '{{ $json.From }}',\n    FromEmail: fromEmail || '{{ $json.From }}',\n    Subject: subject || '{{ $json.subject }}',\n    Snippet: snippet || '{{ $json.snippet }}',\n    Body: body || '',\n    Status: status\n  };\n\n  // put into item.json so following nodes see fields as columns\n  item.json = { ...item.json, ...result };\n\n  out.push(item);\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -128,
+        -176
+      ],
+      "id": "b47c3021-b123-4ca8-8809-f01e0347a8c1",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1UnEYt7ng4snDxoXX2IjorqrRP9zn4xclwMqEUN7O9WM",
+          "mode": "list",
+          "cachedResultName": "n8n_automation_user_tickets",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UnEYt7ng4snDxoXX2IjorqrRP9zn4xclwMqEUN7O9WM/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UnEYt7ng4snDxoXX2IjorqrRP9zn4xclwMqEUN7O9WM/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "TicketID": "={{ $json.TicketID }}",
+            "CreatedAt": "={{ $json.CreatedAt }}",
+            "From": "={{ $json.UserName }}",
+            "FromEmail": "={{ $json.FromEmail }}",
+            "Subject": "={{ $json.Subject }}",
+            "Snippet": "={{ $json.Snippet }}",
+            "Body": "={{ $json.Body }}",
+            "Status": "={{ $json.Status }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "TicketID",
+              "displayName": "TicketID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "CreatedAt",
+              "displayName": "CreatedAt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "From",
+              "displayName": "From",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "FromEmail",
+              "displayName": "FromEmail",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Subject",
+              "displayName": "Subject",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Snippet",
+              "displayName": "Snippet",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Body",
+              "displayName": "Body",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        80,
+        -176
+      ],
+      "id": "4ae6674d-b608-44d7-8588-44bd155590ec",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1keOlv6SsyptZzs7",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Get many messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many messages": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript1": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "87930c89-322d-4398-84a2-091ae79527d3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5560c8cbaa1f4e0a42266f42081145a8b8f9393bba28c3decb2c25e9c460056"
+  },
+  "id": "ZL9Z5a0D301yAR0a",
+  "tags": [
+    {
+      "updatedAt": "2025-12-06T06:51:17.797Z",
+      "createdAt": "2025-12-06T06:51:17.797Z",
+      "id": "WOlyfcHCRLvLlxuZ",
+      "name": "Assignment-2"
+    }
+  ]
+}
