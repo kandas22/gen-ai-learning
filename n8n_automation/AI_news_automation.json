@@ -1,0 +1,441 @@
+{
+  "name": "AI Newsletter Agent - RSS & NewsAPI",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hour": 8,
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Daily 8AM Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 300],
+      "notes": "Triggers the workflow every day at 8 AM"
+    },
+    {
+      "parameters": {
+        "url": "https://feeds.feedburner.com/oreilly/radar/atom",
+        "options": {}
+      },
+      "id": "rss-oreilly",
+      "name": "RSS - O'Reilly Radar",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [250, 100],
+      "notes": "O'Reilly AI and tech insights"
+    },
+    {
+      "parameters": {
+        "url": "https://blog.google/technology/ai/rss/",
+        "options": {}
+      },
+      "id": "rss-google-ai",
+      "name": "RSS - Google AI Blog",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [250, 200],
+      "notes": "Google AI announcements"
+    },
+    {
+      "parameters": {
+        "url": "https://openai.com/blog/rss.xml",
+        "options": {}
+      },
+      "id": "rss-openai",
+      "name": "RSS - OpenAI Blog",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [250, 300],
+      "notes": "OpenAI official blog"
+    },
+    {
+      "parameters": {
+        "url": "https://www.technologyreview.com/feed/",
+        "options": {}
+      },
+      "id": "rss-mit",
+      "name": "RSS - MIT Tech Review",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [250, 400],
+      "notes": "MIT Technology Review"
+    },
+    {
+      "parameters": {
+        "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+        "options": {}
+      },
+      "id": "rss-techcrunch",
+      "name": "RSS - TechCrunch AI",
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.1,
+      "position": [250, 500],
+      "notes": "TechCrunch AI category"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://newsapi.org/v2/everything",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "artificial intelligence OR machine learning OR GPT OR LLM"
+            },
+            {
+              "name": "sortBy",
+              "value": "publishedAt"
+            },
+            {
+              "name": "language",
+              "value": "en"
+            },
+            {
+              "name": "pageSize",
+              "value": "20"
+            },
+            {
+              "name": "apiKey",
+              "value": "={{ $credentials.newsApiKey }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "newsapi-fetch",
+      "name": "NewsAPI - Get AI News",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [250, 650],
+      "notes": "Fetches latest AI news from NewsAPI"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "id": "merge-rss",
+      "name": "Merge RSS Feeds",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Process and combine all collected data\nconst items = $input.all();\nconst currentDate = new Date();\nconst oneDayAgo = new Date(currentDate - 24 * 60 * 60 * 1000);\n\nlet rssArticles = [];\nlet newsApiArticles = [];\n\nfor (const item of items) {\n  const data = item.json;\n  \n  // Process RSS feed items\n  if (data.title && (data.link || data.url) && data.pubDate) {\n    const pubDate = new Date(data.pubDate);\n    rssArticles.push({\n      source: 'RSS',\n      title: data.title,\n      description: data.contentSnippet || data.description || data.summary || '',\n      url: data.link || data.url,\n      publishedAt: pubDate.toISOString(),\n      sourceName: data.creator || data.author || 'Tech Blog'\n    });\n  }\n  \n  // Process NewsAPI items\n  if (data.articles && Array.isArray(data.articles)) {\n    for (const article of data.articles) {\n      newsApiArticles.push({\n        source: 'NewsAPI',\n        title: article.title,\n        description: article.description || '',\n        url: article.url,\n        publishedAt: article.publishedAt,\n        sourceName: article.source?.name || 'News'\n      });\n    }\n  }\n}\n\n// Combine and sort by date\nconst allArticles = [...rssArticles, ...newsApiArticles]\n  .filter(a => a.title && a.title !== '[Removed]')\n  .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt));\n\n// Remove duplicates by title similarity\nconst uniqueArticles = [];\nconst seenTitles = new Set();\n\nfor (const article of allArticles) {\n  const normalizedTitle = article.title.toLowerCase().substring(0, 50);\n  if (!seenTitles.has(normalizedTitle)) {\n    seenTitles.add(normalizedTitle);\n    uniqueArticles.push(article);\n  }\n}\n\n// Take top 15 articles\nconst topArticles = uniqueArticles.slice(0, 15);\n\nreturn [{\n  json: {\n    articles: topArticles,\n    totalCollected: allArticles.length,\n    uniqueCount: uniqueArticles.length,\n    collectedAt: currentDate.toISOString(),\n    dateRange: {\n      from: oneDayAgo.toISOString(),\n      to: currentDate.toISOString()\n    }\n  }\n}];"
+      },
+      "id": "process-data",
+      "name": "Process & Clean Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [700, 400],
+      "notes": "Combines RSS and NewsAPI data, removes duplicates, sorts by date"
+    },
+    {
+      "parameters": {
+        "model": "gpt-4o-mini",
+        "messages": {
+          "values": [
+            {
+              "content": "You are an expert AI researcher and tech newsletter writer. Your job is to analyze trending AI news and create an engaging, informative one-page newsletter. Write in a professional yet accessible tone that both experts and beginners can enjoy."
+            },
+            {
+              "content": "=Based on these trending AI articles from the past 24 hours, create a compelling one-page newsletter.\n\n**ARTICLES:**\n{{ JSON.stringify($json.articles, null, 2) }}\n\n**NEWSLETTER REQUIREMENTS:**\n\n1. **Catchy Headline** - Create an attention-grabbing title for today's edition\n\n2. **Executive Summary** (2-3 sentences) - The most important thing happening in AI today\n\n3. **🔥 Top 3 Stories** - The biggest developments with:\n   - Brief explanation of what happened\n   - Why it matters\n   - Include source name\n\n4. **📊 Quick Bites** (4-5 bullet points) - Other notable news in one line each\n\n5. **💡 Key Insight** - One thoughtful observation or prediction based on today's news\n\n6. **🔗 Worth Reading** - List 3 article titles with their URLs for readers who want to dive deeper\n\n**FORMATTING:**\n- Use emojis sparingly for visual appeal\n- Keep it scannable and easy to read\n- Total length: approximately 400-500 words\n- Make it feel curated and valuable, not just a data dump",
+              "role": "user"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7,
+          "maxTokens": 1500
+        }
+      },
+      "id": "openai-summarize",
+      "name": "OpenAI - Generate Newsletter",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [900, 400],
+      "credentials": {
+        "openAiApi": {
+          "id": "openai-credentials",
+          "name": "OpenAI API"
+        }
+      },
+      "notes": "Uses GPT-4o-mini to create the newsletter summary"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/images/generations",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "openAiApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"dall-e-3\",\n  \"prompt\": \"Create a modern, professional header image for an AI technology newsletter. Abstract visualization of artificial intelligence, neural networks, and data flow. Use a color palette of deep blue, purple, and cyan gradients. Style: minimalist, futuristic, corporate-friendly. No text or words in the image.\",\n  \"n\": 1,\n  \"size\": \"1792x1024\",\n  \"quality\": \"standard\"\n}",
+        "options": {}
+      },
+      "id": "generate-image",
+      "name": "DALL-E - Generate Header Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [900, 600],
+      "credentials": {
+        "openAiApi": {
+          "id": "openai-credentials",
+          "name": "OpenAI API"
+        }
+      },
+      "notes": "Generates a header image for the newsletter"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "id": "merge-content-image",
+      "name": "Merge Content & Image",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [1100, 500]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get newsletter content and image\nconst items = $input.all();\n\nlet newsletterContent = '';\nlet imageUrl = '';\n\nfor (const item of items) {\n  const data = item.json;\n  \n  // Get OpenAI text response\n  if (data.message?.content) {\n    newsletterContent = data.message.content;\n  } else if (data.text) {\n    newsletterContent = data.text;\n  } else if (data.choices?.[0]?.message?.content) {\n    newsletterContent = data.choices[0].message.content;\n  }\n  \n  // Get DALL-E image URL\n  if (data.data?.[0]?.url) {\n    imageUrl = data.data[0].url;\n  }\n}\n\n// Format date\nconst currentDate = new Date().toLocaleDateString('en-US', { \n  weekday: 'long', \n  year: 'numeric', \n  month: 'long', \n  day: 'numeric' \n});\n\n// Convert markdown to HTML\nlet htmlContent = newsletterContent\n  .replace(/\\*\\*(.+?)\\*\\*/g, '<strong>$1</strong>')\n  .replace(/\\*(.+?)\\*/g, '<em>$1</em>')\n  .replace(/^### (.+)$/gm, '<h3 style=\"color: #6366f1; margin-top: 24px; margin-bottom: 12px; font-size: 18px;\">$1</h3>')\n  .replace(/^## (.+)$/gm, '<h2 style=\"color: #4f46e5; margin-top: 28px; margin-bottom: 14px; font-size: 22px;\">$1</h2>')\n  .replace(/^# (.+)$/gm, '<h1 style=\"color: #3730a3; margin-top: 32px; margin-bottom: 16px; font-size: 28px;\">$1</h1>')\n  .replace(/^- (.+)$/gm, '<li style=\"margin-bottom: 8px;\">$1</li>')\n  .replace(/^• (.+)$/gm, '<li style=\"margin-bottom: 8px;\">$1</li>')\n  .replace(/\\[([^\\]]+)\\]\\(([^)]+)\\)/g, '<a href=\"$2\" style=\"color: #6366f1; text-decoration: underline;\">$1</a>')\n  .replace(/\\n\\n/g, '</p><p style=\"margin-bottom: 16px; line-height: 1.7;\">')\n  .replace(/\\n/g, '<br>');\n\n// Wrap consecutive list items in ul tags\nhtmlContent = htmlContent.replace(/(<li[^>]*>.*?<\\/li>\\s*)+/g, '<ul style=\"margin: 16px 0; padding-left: 24px;\">$&</ul>');\n\nconst htmlNewsletter = `\n<!DOCTYPE html>\n<html>\n<head>\n  <meta charset=\"UTF-8\">\n  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n  <title>AI Research Digest</title>\n</head>\n<body style=\"margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;\">\n  <div style=\"max-width: 680px; margin: 0 auto; padding: 20px;\">\n    \n    <!-- Header -->\n    <div style=\"background: linear-gradient(135deg, #3730a3 0%, #6366f1 50%, #8b5cf6 100%); padding: 40px 30px; border-radius: 16px 16px 0 0; text-align: center;\">\n      <h1 style=\"color: white; margin: 0; font-size: 32px; font-weight: 700;\">🤖 AI Research Digest</h1>\n      <p style=\"color: #e0e7ff; margin: 12px 0 0 0; font-size: 16px;\">${currentDate}</p>\n    </div>\n    \n    <!-- Main Content -->\n    <div style=\"background: white; padding: 40px 30px; border-radius: 0 0 16px 16px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);\">\n      \n      ${imageUrl ? `\n      <!-- Header Image -->\n      <img src=\"${imageUrl}\" alt=\"AI Newsletter Header\" style=\"width: 100%; height: auto; border-radius: 12px; margin-bottom: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);\">\n      ` : ''}\n      \n      <!-- Newsletter Content -->\n      <div style=\"color: #374151; font-size: 16px; line-height: 1.7;\">\n        <p style=\"margin-bottom: 16px; line-height: 1.7;\">${htmlContent}</p>\n      </div>\n      \n      <!-- Divider -->\n      <hr style=\"border: none; border-top: 2px solid #e5e7eb; margin: 40px 0;\">\n      \n      <!-- Footer -->\n      <div style=\"text-align: center; color: #9ca3af; font-size: 14px;\">\n        <p style=\"margin: 0 0 8px 0;\">Generated by <strong>AI Research Agent</strong></p>\n        <p style=\"margin: 0 0 8px 0;\">Powered by n8n + OpenAI + NewsAPI</p>\n        <p style=\"margin: 0; font-size: 12px;\">Sources: Google AI Blog, OpenAI Blog, MIT Tech Review, TechCrunch, O'Reilly Radar, and NewsAPI</p>\n      </div>\n      \n    </div>\n  </div>\n</body>\n</html>\n`;\n\n// Plain text version for Slack\nconst plainTextNewsletter = `\n🤖 *AI RESEARCH DIGEST*\n📅 ${currentDate}\n${'━'.repeat(40)}\n\n${newsletterContent}\n\n${'━'.repeat(40)}\n_Generated by AI Research Agent_\n_Powered by n8n + OpenAI + NewsAPI_\n`;\n\n// Slack-formatted version (mrkdwn)\nconst slackNewsletter = newsletterContent\n  .replace(/\\*\\*(.+?)\\*\\*/g, '*$1*')\n  .replace(/^# (.+)$/gm, '*$1*')\n  .replace(/^## (.+)$/gm, '*$1*')\n  .replace(/^### (.+)$/gm, '*$1*');\n\nreturn [{\n  json: {\n    htmlNewsletter,\n    plainTextNewsletter,\n    slackNewsletter: `🤖 *AI RESEARCH DIGEST*\\n📅 ${currentDate}\\n${'━'.repeat(40)}\\n\\n${slackNewsletter}\\n\\n${'━'.repeat(40)}\\n_Generated by AI Research Agent_`,\n    imageUrl,\n    subject: `🤖 AI Research Digest - ${currentDate}`,\n    generatedAt: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "format-newsletter",
+      "name": "Format Newsletter (HTML + Slack)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1300, 500],
+      "notes": "Converts newsletter to HTML for email and formatted text for Slack"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "name",
+          "value": "#ai-newsletter"
+        },
+        "text": "={{ $json.slackNewsletter }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false,
+          "unfurl_links": false,
+          "unfurl_media": true,
+          "mrkdwn": true
+        }
+      },
+      "id": "slack-send",
+      "name": "Slack - Send Newsletter",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.2,
+      "position": [1550, 400],
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "slack-credentials",
+          "name": "Slack OAuth2"
+        }
+      },
+      "notes": "Posts the newsletter to your Slack channel"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $env.NEWSLETTER_EMAIL || 'your-email@example.com' }}",
+        "subject": "={{ $json.subject }}",
+        "emailType": "html",
+        "message": "={{ $json.htmlNewsletter }}",
+        "options": {
+          "appendAttributionToBody": false
+        }
+      },
+      "id": "gmail-send",
+      "name": "Gmail - Send Newsletter",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [1550, 600],
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "gmail-credentials",
+          "name": "Gmail OAuth2"
+        }
+      },
+      "notes": "Sends the HTML newsletter via Gmail"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "name": "status",
+              "value": "Newsletter sent successfully",
+              "type": "string"
+            },
+            {
+              "name": "timestamp",
+              "value": "={{ new Date().toISOString() }}",
+              "type": "string"
+            },
+            {
+              "name": "channels",
+              "value": "Slack + Gmail",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "set-success",
+      "name": "✅ Success",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [1750, 500]
+    }
+  ],
+  "connections": {
+    "Daily 8AM Trigger": {
+      "main": [
+        [
+          { "node": "RSS - O'Reilly Radar", "type": "main", "index": 0 },
+          { "node": "RSS - Google AI Blog", "type": "main", "index": 0 },
+          { "node": "RSS - OpenAI Blog", "type": "main", "index": 0 },
+          { "node": "RSS - MIT Tech Review", "type": "main", "index": 0 },
+          { "node": "RSS - TechCrunch AI", "type": "main", "index": 0 },
+          { "node": "NewsAPI - Get AI News", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "RSS - O'Reilly Radar": {
+      "main": [
+        [
+          { "node": "Merge RSS Feeds", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "RSS - Google AI Blog": {
+      "main": [
+        [
+          { "node": "Merge RSS Feeds", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "RSS - OpenAI Blog": {
+      "main": [
+        [
+          { "node": "Merge RSS Feeds", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "RSS - MIT Tech Review": {
+      "main": [
+        [
+          { "node": "Merge RSS Feeds", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "RSS - TechCrunch AI": {
+      "main": [
+        [
+          { "node": "Merge RSS Feeds", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "NewsAPI - Get AI News": {
+      "main": [
+        [
+          { "node": "Process & Clean Data", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Merge RSS Feeds": {
+      "main": [
+        [
+          { "node": "Process & Clean Data", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Process & Clean Data": {
+      "main": [
+        [
+          { "node": "OpenAI - Generate Newsletter", "type": "main", "index": 0 },
+          { "node": "DALL-E - Generate Header Image", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "OpenAI - Generate Newsletter": {
+      "main": [
+        [
+          { "node": "Merge Content & Image", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "DALL-E - Generate Header Image": {
+      "main": [
+        [
+          { "node": "Merge Content & Image", "type": "main", "index": 1 }
+        ]
+      ]
+    },
+    "Merge Content & Image": {
+      "main": [
+        [
+          { "node": "Format Newsletter (HTML + Slack)", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Format Newsletter (HTML + Slack)": {
+      "main": [
+        [
+          { "node": "Slack - Send Newsletter", "type": "main", "index": 0 },
+          { "node": "Gmail - Send Newsletter", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Slack - Send Newsletter": {
+      "main": [
+        [
+          { "node": "✅ Success", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Gmail - Send Newsletter": {
+      "main": [
+        [
+          { "node": "✅ Success", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "tags": [
+    { "name": "AI Newsletter" },
+    { "name": "Automation" },
+    { "name": "RSS" },
+    { "name": "NewsAPI" }
+  ],
+  "pinData": {}
+}

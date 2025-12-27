@@ -1,5 +1,5 @@
 {
-  "name": "N8n Automation",
+  "name": "n8n_automation - N8n Automation",
   "nodes": [
     {
       "parameters": {},
@@ -18,7 +18,7 @@
         "limit": 1,
         "filters": {
           "includeSpamTrash": true,
-          "sender": "kandas22@gmail.com"
+          "sender": "<YOUR_MONITORED_EMAIL>"
         }
       },
       "type": "n8n-nodes-base.gmail",
@@ -31,12 +31,7 @@
       "name": "Get many messages",
       "webhookId": "d9eb062c-d640-4a32-91a5-31b08ebeb0a1",
       "alwaysOutputData": true,
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "hoTc8s9AaZrvBUmX",
-          "name": "Gmail account 2"
-        }
-      }
+      "credentials": {}
     },
     {
       "parameters": {
@@ -44,7 +39,7 @@
         "select": "channel",
         "channelId": {
           "__rl": true,
-          "value": "C0A1WCL1LBG",
+          "value": "<YOUR_CHANNEL_ID>",
           "mode": "list",
           "cachedResultName": "genai4-titans"
         },
@@ -62,12 +57,7 @@
       "name": "Send a message",
       "webhookId": "91ec3b2e-b550-4a75-ae7c-34b041c4fd88",
       "alwaysOutputData": true,
-      "credentials": {
-        "slackOAuth2Api": {
-          "id": "3F4RvH0qG8CadWoD",
-          "name": "Slack account 4"
-        }
-      }
+      "credentials": {}
     },
     {
       "parameters": {
@@ -100,17 +90,17 @@
         "operation": "append",
         "documentId": {
           "__rl": true,
-          "value": "1UnEYt7ng4snDxoXX2IjorqrRP9zn4xclwMqEUN7O9WM",
+          "value": "<YOUR_SPREADSHEET_ID>",
           "mode": "list",
           "cachedResultName": "n8n_automation_user_tickets",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UnEYt7ng4snDxoXX2IjorqrRP9zn4xclwMqEUN7O9WM/edit?usp=drivesdk"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/<YOUR_SPREADSHEET_ID>/edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
           "value": "gid=0",
           "mode": "list",
           "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1UnEYt7ng4snDxoXX2IjorqrRP9zn4xclwMqEUN7O9WM/edit#gid=0"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/<YOUR_SPREADSHEET_ID>/edit#gid=0"
         },
         "columns": {
           "mappingMode": "defineBelow",
@@ -212,12 +202,7 @@
       ],
       "id": "4ae6674d-b608-44d7-8588-44bd155590ec",
       "name": "Append row in sheet",
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "1keOlv6SsyptZzs7",
-          "name": "Google Sheets account"
-        }
-      }
+      "credentials": {}
     }
   ],
   "pinData": {},
@@ -286,6 +271,12 @@
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e5560c8cbaa1f4e0a42266f42081145a8b8f9393bba28c3decb2c25e9c460056"
+  },
+  "n8n_meta": {
+    "description": "Email-to-Slack ticketing automation. After import, configure Gmail, Google Sheets, and Slack credentials; update channel IDs and spreadsheet ID.",
+    "author": "n8n_automation repo",
+    "requiredCredentialsNote": "Requires Gmail OAuth2, Google Sheets OAuth2, and Slack OAuth2. Credentials are not embedded — configure them in n8n.",
+    "readme": "README.md"
   },
   "id": "ZL9Z5a0D301yAR0a",
   "tags": [

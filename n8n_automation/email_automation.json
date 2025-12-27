@@ -1,5 +1,5 @@
 {
-  "name": "N8N_Task1",
+  "name": "n8n_automation - N8N_Task1",
   "nodes": [
     {
       "parameters": {},
@@ -16,17 +16,17 @@
       "parameters": {
         "documentId": {
           "__rl": true,
-          "value": "1rQSDF6sMP42GCJzGvunW5pHr80Rfxd5O1VySkBZclCY",
+          "value": "<YOUR_SPREADSHEET_ID>",
           "mode": "list",
           "cachedResultName": "trigger_email",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rQSDF6sMP42GCJzGvunW5pHr80Rfxd5O1VySkBZclCY/edit?usp=drivesdk"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/<YOUR_SPREADSHEET_ID>/edit?usp=drivesdk"
         },
         "sheetName": {
           "__rl": true,
           "value": "gid=0",
           "mode": "list",
           "cachedResultName": "Sheet1",
-          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1rQSDF6sMP42GCJzGvunW5pHr80Rfxd5O1VySkBZclCY/edit#gid=0"
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/<YOUR_SPREADSHEET_ID>/edit#gid=0"
         },
         "options": {}
       },
@@ -38,12 +38,7 @@
       ],
       "id": "1d554931-e8e8-4c5b-8447-35e0f8266cad",
       "name": "Get row(s) in sheet",
-      "credentials": {
-        "googleSheetsOAuth2Api": {
-          "id": "1keOlv6SsyptZzs7",
-          "name": "Google Sheets account"
-        }
-      }
+      "credentials": {}
     },
     {
       "parameters": {
@@ -92,12 +87,7 @@
       "id": "aab33124-63d3-44ea-aa97-c582f0f3057b",
       "name": "Send a message",
       "webhookId": "2899b8d6-eea8-4eea-9e05-b76c1d811e81",
-      "credentials": {
-        "gmailOAuth2": {
-          "id": "hoTc8s9AaZrvBUmX",
-          "name": "Gmail account 2"
-        }
-      }
+      "credentials": {}
     },
     {
       "parameters": {
@@ -126,12 +116,7 @@
       ],
       "id": "cc84c040-656d-4c5d-9d5e-8780f5385652",
       "name": "Message a model",
-      "credentials": {
-        "openAiApi": {
-          "id": "pNYnecEsStzPJ3lW",
-          "name": "OpenAi account 2"
-        }
-      }
+      "credentials": {}
     },
     {
       "parameters": {
@@ -216,6 +201,12 @@
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e5560c8cbaa1f4e0a42266f42081145a8b8f9393bba28c3decb2c25e9c460056"
+  },
+  "n8n_meta": {
+    "description": "Email automation for guest follow-ups. After importing, replace any spreadsheet IDs and attach your own Gmail/OpenAI credentials in n8n.",
+    "author": "n8n_automation repo",
+    "requiredCredentialsNote": "Requires Google Sheets OAuth and Gmail OAuth; OpenAI API optional. Credentials are left to be configured in n8n for safety.",
+    "readme": "README.md"
   },
   "id": "OMrCa6KLzWCLUA0h",
   "tags": [

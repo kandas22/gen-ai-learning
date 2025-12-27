@@ -1,0 +1,110 @@
+{
+  "name": "n8n_automation - Slack - Generate image and reply in thread",
+  "nodes": [
+    {
+      "parameters": {
+        "trigger": [
+          "app_mention"
+        ],
+        "channelId": {
+          "__rl": true,
+          "value": "<YOUR_CHANNEL_ID>",
+          "mode": "list",
+          "cachedResultName": "all-genailearning"
+        },
+        "options": {}
+      },
+      "name": "Slack Trigger",
+      "type": "n8n-nodes-base.slackTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "676ba48e-41ed-41c8-8a56-c45123f608c7",
+      "webhookId": "9aef870f-c61c-4c2a-a2e0-59d4bb576e04",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "channel": "={{ $json.event.channel }}",
+        "otherOptions": {},
+        "attachments": []
+      },
+      "name": "Upload a file",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 1,
+      "position": [
+        400,
+        0
+      ],
+      "id": "ee0f7fe8-0dab-4a57-a746-39f1837880a9",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash-image",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash-image (Nano Banana)"
+        },
+        "options": {
+          "binaryPropertyOutput": "data"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        224,
+        0
+      ],
+      "id": "3a025a94-1c66-4b62-9e0b-b62b1b42cfb7",
+      "name": "Generate an image1",
+      "credentials": {}
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Slack Trigger": {
+      "main": [
+        [
+          {
+            "node": "Generate an image1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate an image1": {
+      "main": [
+        [
+          {
+            "node": "Upload a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f0a11f6c-b949-4399-8490-de827242425f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5560c8cbaa1f4e0a42266f42081145a8b8f9393bba28c3decb2c25e9c460056"
+  },
+  "n8n_meta": {
+    "description": "Slack image generation flow; update Slack channel IDs and add Slack/Gemini credentials in n8n after import.",
+    "author": "n8n_automation repo",
+    "requiredCredentialsNote": "Typically requires Slack OAuth2 and Google Gemini API. Configure credentials in n8n UI.",
+    "readme": "README.md"
+  },
+  "id": "w44bEik0XuTeDnLv",
+  "tags": []
+}

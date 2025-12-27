@@ -1,0 +1,438 @@
+{
+  "name": "n8n_automation - AI-Jarvis-Voice-Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c8713852-17ba-4fd4-ae82-58ff7ab21cd8",
+      "name": "Telegram Trigger",
+      "webhookId": "5cb8787d-f1e9-42c1-b6e5-e06e0d37594c",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c4543b22-5c2e-4c5d-a8cf-744017b9a0c3",
+                    "leftValue": "={{ $json.message.voice.file_unique_id }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Voice"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "9f8a4078-fa4c-4889-8cb9-ef1bb6611e90",
+                    "leftValue": "={{ $json.message.text || \"\"}}",
+                    "rightValue": 0,
+                    "operator": {
+                      "type": "string",
+                      "operation": "exists",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Text"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        0,
+        240
+      ],
+      "id": "8562d5f4-f8cc-48c1-be6d-40f7abc0e8e5",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "248f4a6a-277f-485a-80da-271dbf605464",
+              "name": "message.text",
+              "value": "={{ $json.message.text}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        16,
+        688
+      ],
+      "id": "f9ea924c-ef99-454d-bc16-e099366ca790",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Reply the User message with your intelligence: {{ $json.message.text }}\nReply the User message with your intelligence: {{ $json.text }}\nName of the User : {{ $('Telegram Trigger').item.json.message.chat.first_name }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        240,
+        688
+      ],
+      "id": "46c14057-df39-4632-825f-6a05f135fa0b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        176,
+        928
+      ],
+      "id": "cb012a02-6ae7-4a49-8f8c-4961eeadd6c9",
+      "name": "OpenAI Chat Model",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Telegram Trigger').item.json.message.chat.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        336,
+        928
+      ],
+      "id": "41c48beb-0136-4556-99d7-5ee4c229f3cf",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        624,
+        928
+      ],
+      "id": "a86e302b-4170-4fc3-9537-fc380f07e85b",
+      "name": "Send a message in Gmail",
+      "webhookId": "6a999239-0a4a-4c18-88c6-87877c3ad1d9",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        272,
+        224
+      ],
+      "id": "77fa2fa5-7b9b-46d0-89ab-7e6c8d14448f",
+      "name": "Get a file",
+      "webhookId": "cb1b266a-f630-441d-9a50-1c22b7759eeb",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "operation": "transcribe",
+        "options": {
+          "language": "en",
+          "temperature": 0.8
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        464,
+        224
+      ],
+      "id": "15c38b2f-0b0c-41d1-ae54-6302b1ae273a",
+      "name": "Transcribe a recording",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "5cfa5eb5-aaa5-44cc-988d-9a43d1be1f02",
+              "name": "text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        640,
+        224
+      ],
+      "id": "ff6124e9-9172-4f15-bb00-c2dd681ccb4d",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "operation": "sendAudio",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "binaryData": true,
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        864,
+        688
+      ],
+      "id": "5e938a9f-e192-421e-8cb7-865c9209cc7e",
+      "name": "Send an audio file",
+      "webhookId": "c045096b-dd78-4ee4-91c9-e0f3be18c137",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "input": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        640,
+        688
+      ],
+      "id": "e2aa80c0-4a32-4ca5-bb57-f25bd9e605b4",
+      "name": "Generate audio",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        640,
+        480
+      ],
+      "id": "b6b4cede-0ee0-4c76-8862-a77cd0694ce7",
+      "name": "Send a text message",
+      "webhookId": "30d27bfa-939f-4a20-854e-a9df5037b09c",
+      "credentials": {}
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        []
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Generate audio",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate audio": {
+      "main": [
+        [
+          {
+            "node": "Send an audio file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "0f2943f0-e051-45d8-a2b3-b3bbad989309",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5560c8cbaa1f4e0a42266f42081145a8b8f9393bba28c3decb2c25e9c460056"
+  },
+  "n8n_meta": {
+    "description": "Voice assistant workflows using Telegram and LLMs. Update Telegram and OpenAI credentials after import.",
+    "author": "n8n_automation repo",
+    "requiredCredentialsNote": "Typically requires Telegram API and OpenAI credentials. Configure them in n8n UI.",
+    "readme": "README.md"
+  },
+  "id": "nt5T9Uu1ECh7aRiu",
+  "tags": []
+}

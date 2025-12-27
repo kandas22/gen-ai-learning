@@ -1,5 +1,5 @@
 {
-  "name": "N8n Automation",
+  "name": "n8n_automation - N8n Automation",
   "nodes": [
     {
       "parameters": {},
@@ -35,12 +35,7 @@
       ],
       "id": "c1c1cf29-5548-4cf7-90fc-4d09f0ee8556",
       "name": "Generate an image",
-      "credentials": {
-        "googlePalmApi": {
-          "id": "LMaPmbsNBbE81Xik",
-          "name": "Google Gemini(PaLM) Api account"
-        }
-      }
+      "credentials": {}
     },
     {
       "parameters": {
@@ -49,7 +44,7 @@
         "operation": "history",
         "channelId": {
           "__rl": true,
-          "value": "C0A1WCL1LBG",
+          "value": "<YOUR_CHANNEL_ID>",
           "mode": "list",
           "cachedResultName": "genai4-titans"
         },
@@ -65,19 +60,14 @@
       "id": "f65a229c-21e8-47ea-a548-3f3c619dd37c",
       "name": "Get the history of a channel",
       "webhookId": "11629100-01c8-4846-8f3a-2e91e7df1749",
-      "credentials": {
-        "slackOAuth2Api": {
-          "id": "o9IoaB7QBRtRCLlx",
-          "name": "Slack account 5"
-        }
-      }
+      "credentials": {}
     },
     {
       "parameters": {
         "authentication": "oAuth2",
         "resource": "file",
         "options": {
-          "channelId": "C0A1WCL1LBG",
+          "channelId": "<YOUR_CHANNEL_ID>",
           "fileName": "={{ $json.fileName }}",
           "title": "GenAI4Titans Offers"
         }
@@ -92,12 +82,7 @@
       "name": "Upload a file",
       "webhookId": "80daa013-df95-46d3-974b-03047799ea1c",
       "alwaysOutputData": true,
-      "credentials": {
-        "slackOAuth2Api": {
-          "id": "3F4RvH0qG8CadWoD",
-          "name": "Slack account 4"
-        }
-      }
+      "credentials": {}
     }
   ],
   "pinData": {},
@@ -144,6 +129,12 @@
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "e5560c8cbaa1f4e0a42266f42081145a8b8f9393bba28c3decb2c25e9c460056"
+  },
+  "n8n_meta": {
+    "description": "Slack-driven Gemini image generator. Update channel IDs and add Slack/Gemini credentials after import.",
+    "author": "n8n_automation repo",
+    "requiredCredentialsNote": "Requires Slack OAuth2 and Google Gemini (PaLM) API. Credentials are not embedded.",
+    "readme": "README.md"
   },
   "id": "uua2fQYotzS2cw2j",
   "tags": [

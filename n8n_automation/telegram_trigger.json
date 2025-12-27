@@ -1,0 +1,135 @@
+{
+  "name": "n8n_automation - Kanda-GenAI",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -112,
+        352
+      ],
+      "id": "c23cc41b-91ce-402a-a95a-039efd97ca9f",
+      "name": "Telegram Trigger",
+      "webhookId": "5f6e5434-9b52-4918-a65b-052687b58f6c",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Reply from N8N: {{ $json.message.text }}",
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        96,
+        352
+      ],
+      "id": "b75cdca6-f14c-4408-a9aa-fdb3fcfca3f6",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {
+          "webSearch": {
+            "searchContextSize": "medium",
+            "allowedDomains": "google.com"
+          }
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        96,
+        560
+      ],
+      "id": "2ddaaa4e-3760-4b22-917e-b96299bae4a6",
+      "name": "OpenAI Chat Model1",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": true
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        448,
+        352
+      ],
+      "id": "dbb4d85c-3548-4554-85b0-f610f0abdd6b",
+      "name": "Send a text message",
+      "webhookId": "b439d1be-75e6-445a-81b9-62f4b24fbdac",
+      "credentials": {}
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e754241f-a99c-42ef-8725-d2caf0d09dd3",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5560c8cbaa1f4e0a42266f42081145a8b8f9393bba28c3decb2c25e9c460056"
+  },
+  "n8n_meta": {
+    "description": "Telegram-triggered example workflow. After import, create and attach your own credentials and update resource IDs.",
+    "author": "n8n_automation repo",
+    "requiredCredentialsNote": "This workflow uses Telegram and OpenAI. Credentials have been removed for safety — create your own in n8n and attach to nodes.",
+    "readme": "README.md"
+  },
+  "id": "vbrME1tM1of58ZaE",
+  "tags": []
+}

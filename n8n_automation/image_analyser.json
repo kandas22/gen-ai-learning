@@ -1,0 +1,133 @@
+{
+  "name": "n8n_automation - Image Analyser",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "image_v1",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*",
+          "rawBody": false
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "1d2a4b69-f54e-48ab-bc8d-75068357c177",
+      "name": "Webhook",
+      "webhookId": "45161665-9417-416a-a685-2e18c1097a63"
+    },
+    {
+      "parameters": {
+        "resource": "image",
+        "operation": "analyze",
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o",
+          "mode": "list",
+          "cachedResultName": "GPT-4O"
+        },
+        "inputType": "base64",
+        "binaryPropertyName": "=data",
+        "simplify": "={{ true }}",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "87555b28-6bc1-47f5-94d5-394bd8898ede",
+      "name": "Analyze image",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.mapped }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        624,
+        0
+      ],
+      "id": "f6795d8e-494c-4d9b-9c0f-531aff70af27",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Read text output from Analyze Image\nconst raw =  $input.first().json['0'].content[0].text|| \"\";\n\n// --- 1. Normalize ---\nlet text = raw\n  .replace(/^text:\\s*/i, \"\")   // remove \"text:\" prefix if present\n  .trim();\n\n// Split into lines and clean them\nlet lines = text\n  .split(/\\r?\\n/)\n  .map(l => l.trim())\n  .filter(l => l.length > 0);\n\n// --- 2. Find only item lines (“- Tomato - 1 kg”) ---\nconst itemLines = lines.filter(l =>\n  /^[-•*]?\\s*[A-Za-z].*-\\s*\\d/.test(l)   // something like \"* Tomato - 1 kg\"\n);\n\n// --- 3. Parse lines cleanly ---\nfunction parseLine(line) {\n  // Remove bullet symbols like \"-\", \"•\", \"*\"\n  line = line.replace(/^[-•*]\\s*/, \"\").trim();\n\n  // Split on the LAST dash (so names with dashes still work)\n  const idx = line.lastIndexOf(\" - \");\n  if (idx === -1) return null;\n\n  const name = line.slice(0, idx).trim();\n  const qty = line.slice(idx + 3).trim(); // after \" - \"\n\n  return { name, qty };\n}\n\n// --- 4. Build key-value map ---\nconst mapped = {};\n\nfor (const line of itemLines) {\n  const parsed = parseLine(line);\n  if (!parsed) continue;\n\n  const { name, qty } = parsed;\n\n  // Clean quantity (normalize spacing)\n  const cleanQty = qty.replace(/\\s+/g, \" \").trim();\n\n  mapped[name] = cleanQty;\n}\n\n// --- 5. Return final object ---\nreturn [\n  {\n    json: {\n      mapped\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        416,
+        0
+      ],
+      "id": "f96fa931-bb0e-4cfa-81ec-c60a835acd88",
+      "name": "Code in JavaScript"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Analyze image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze image": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e8f87144-99bc-4903-af4e-61a95af83d30",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5560c8cbaa1f4e0a42266f42081145a8b8f9393bba28c3decb2c25e9c460056"
+  },
+  "n8n_meta": {
+    "description": "Image analysis webhook using OpenAI vision. After import, attach your OpenAI credentials and adjust model settings.",
+    "author": "n8n_automation repo",
+    "requiredCredentialsNote": "Requires OpenAI API credentials for image analysis. Configure them in n8n.",
+    "readme": "README.md"
+  },
+  "id": "390KEqlFvkJnpBVI",
+  "tags": []
+}

@@ -1,0 +1,466 @@
+{
+  "name": "n8n_automation - RAG Agent 2.0",
+  "nodes": [
+    {
+      "parameters": {
+        "chunkOverlap": 100,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        368
+      ],
+      "id": "4b5d7256-02df-45dc-a737-1fc8b779faae",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        -672,
+        192
+      ],
+      "id": "2edb9b80-3ff7-4e27-8d75-76ba9c3caa37",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -864,
+        160
+      ],
+      "id": "833f7579-ac44-4614-b678-6784d4c5d15f",
+      "name": "Embeddings OpenAI",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "rag-n8n",
+          "mode": "list",
+          "cachedResultName": "rag-n8n"
+        },
+        "options": {
+          "pineconeNamespace": "=company_document_{{ $now.toFormat('yyyyLLdd-HHmm')}}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        -816,
+        -16
+      ],
+      "id": "b9d55bf6-0320-4435-9078-f130f819f144",
+      "name": "Pinecone Vector Store",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1024,
+        -16
+      ],
+      "id": "bbc75071-9391-4ac1-82d5-22b7065c077f",
+      "name": "Download file",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "<YOUR_DRIVE_FOLDER_ID>",
+          "mode": "list",
+          "cachedResultName": "RAG_N8N_Demo",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/<YOUR_DRIVE_FOLDER_ID>"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1312,
+        -16
+      ],
+      "id": "e815270b-38a8-46cc-9c41-069615781379",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "wJc8IUTHudkBmZPJ",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        656,
+        304
+      ],
+      "id": "bce7305a-9e86-4488-8fbd-662676b6bfd7",
+      "name": "OpenAI Chat Model1",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        320,
+        464
+      ],
+      "id": "b76ce94c-b00b-4c82-954c-38811b039185",
+      "name": "Embeddings OpenAI1",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "description": "Retrive the context based on user query"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolVectorStore",
+      "typeVersion": 1.1,
+      "position": [
+        400,
+        80
+      ],
+      "id": "8e82b1b5-3c94-4561-9ee3-79255c0ba026",
+      "name": "Answer questions with a vector store"
+    },
+    {
+      "parameters": {
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "rag-n8n",
+          "mode": "list",
+          "cachedResultName": "rag-n8n"
+        },
+        "options": {
+          "pineconeNamespace": "="
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        320,
+        288
+      ],
+      "id": "c40b66d0-0ec5-4b9c-8a1f-c97b487af6f2",
+      "name": "Internal Pinecone RAG",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "={{ $json.output }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        560,
+        -128
+      ],
+      "id": "3664d68d-d387-49e6-a1e6-5e6af87930ea",
+      "name": "Send a text message",
+      "webhookId": "bd5e3823-5162-4d7c-8906-c0cd6fb2348f",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -336,
+        -128
+      ],
+      "id": "a0e23062-5a95-4cf3-8501-bdc3207fb105",
+      "name": "Telegram Trigger",
+      "webhookId": "3513799c-21f8-4cdb-afc9-acfef0f32f66",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json[\"message\"][\"text\"]}}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an ai agent, answer the user query based on input, if no answer fall back to rag and retrive the context\n\nIf your ask anything latest , current data\n  - Call serpapi (google search) and then answer it"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -128,
+        -128
+      ],
+      "id": "f4d53a98-54ef-4365-92ce-0582a9dc1924",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -272,
+        80
+      ],
+      "id": "d75070d3-7bdd-4c8c-aece-044a31bfe154",
+      "name": "OpenAI Chat Model",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.message.from.id }}",
+        "contextWindowLength": "={{ 5 }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -128,
+        80
+      ],
+      "id": "09fdbd32-3eb6-42eb-b519-74304e38c73b",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "q": "={{ $('Telegram Trigger').item.json.message.text }}",
+        "additionalFields": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-serpapi.serpApiTool",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        240
+      ],
+      "id": "04292d21-e9c1-4b0d-bb4d-f249249d2d75",
+      "name": "Google search in SerpApi",
+      "credentials": {}
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        []
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI1": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Internal Pinecone RAG",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Answer questions with a vector store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Internal Pinecone RAG": {
+      "ai_vectorStore": [
+        [
+          {
+            "node": "Answer questions with a vector store",
+            "type": "ai_vectorStore",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google search in SerpApi": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "df08ba58-3044-46a2-a6f1-a0bbf8ed7365",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5560c8cbaa1f4e0a42266f42081145a8b8f9393bba28c3decb2c25e9c460056"
+  },
+  "n8n_meta": {
+    "description": "Retrieval-Augmented Generation (RAG) example. Update Pinecone, Google Drive, and OpenAI credentials after import.",
+    "author": "n8n_automation repo",
+    "requiredCredentialsNote": "May require Pinecone API, Google Drive/Sheets, and OpenAI credentials. Configure them in n8n.",
+    "readme": "README.md"
+  },
+  "id": "TaiUIRNCTb6T46WK",
+  "tags": []
+}

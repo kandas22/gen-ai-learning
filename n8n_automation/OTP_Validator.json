@@ -1,0 +1,459 @@
+{
+  "name": "Tamil Newsletter - OTP Email Sender (Cloud Compatible)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "send-otp",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook - Receive OTP Request",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "send-otp-webhook"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "{\n  \"SUPABASE_URL\": \"https://YOUR_PROJECT_ID.supabase.co\",\n  \"SUPABASE_SERVICE_KEY\": \"YOUR_SUPABASE_SERVICE_KEY_HERE\",\n  \"SUPABASE_ANON_KEY\": \"YOUR_SUPABASE_ANON_KEY_HERE\",\n  \"RESEND_API_KEY\": \"re_YOUR_RESEND_API_KEY_HERE\",\n  \"FROM_EMAIL\": \"Tamil Newsletter <noreply@yourdomain.com>\"\n}",
+        "options": {}
+      },
+      "id": "config-node",
+      "name": "⚙️ CONFIG - Edit Your Keys Here",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [470, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// TABLE CREATION & SETUP SQL PREPARATION\n// ============================================\n\n// Get config from previous node\nconst config = $input.first().json;\nconst webhookData = $('Webhook - Receive OTP Request').first().json;\n\n// SQL to create all required tables\nconst createTablesSql = `\n-- Create users table if not exists\nCREATE TABLE IF NOT EXISTS users (\n  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  email VARCHAR(255) UNIQUE NOT NULL,\n  is_verified BOOLEAN DEFAULT FALSE,\n  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n);\n\n-- Create otp_codes table if not exists\nCREATE TABLE IF NOT EXISTS otp_codes (\n  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  email VARCHAR(255) NOT NULL,\n  otp_code VARCHAR(6) NOT NULL,\n  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,\n  is_used BOOLEAN DEFAULT FALSE,\n  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n);\n\n-- Create user_sessions table if not exists\nCREATE TABLE IF NOT EXISTS user_sessions (\n  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id UUID REFERENCES users(id) ON DELETE CASCADE,\n  session_token VARCHAR(255) UNIQUE NOT NULL,\n  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,\n  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n);\n\n-- Create news_categories table if not exists\nCREATE TABLE IF NOT EXISTS news_categories (\n  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  name VARCHAR(100) NOT NULL,\n  name_tamil VARCHAR(100) NOT NULL,\n  description TEXT,\n  description_tamil TEXT,\n  schedule VARCHAR(50) NOT NULL,\n  delivery_time TIME,\n  delivery_day VARCHAR(20),\n  is_active BOOLEAN DEFAULT TRUE,\n  icon VARCHAR(50),\n  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()\n);\n\n-- Create subscriptions table if not exists\nCREATE TABLE IF NOT EXISTS subscriptions (\n  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),\n  user_id UUID REFERENCES users(id) ON DELETE CASCADE,\n  category_id UUID REFERENCES news_categories(id),\n  is_active BOOLEAN DEFAULT TRUE,\n  subscribed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),\n  unsubscribed_at TIMESTAMP WITH TIME ZONE,\n  UNIQUE(user_id, category_id)\n);\n\n-- Create indexes if not exists\nCREATE INDEX IF NOT EXISTS idx_otp_codes_email ON otp_codes(email);\nCREATE INDEX IF NOT EXISTS idx_otp_codes_expires ON otp_codes(expires_at);\nCREATE INDEX IF NOT EXISTS idx_user_sessions_token ON user_sessions(session_token);\nCREATE INDEX IF NOT EXISTS idx_user_sessions_expires ON user_sessions(expires_at);\nCREATE INDEX IF NOT EXISTS idx_subscriptions_user ON subscriptions(user_id);\n`;\n\n// Seed data SQL\nconst seedCategoriesSql = `\nINSERT INTO news_categories (name, name_tamil, description, description_tamil, schedule, delivery_time, icon)\nSELECT 'Daily Tamil News', 'தினசரி தமிழ் செய்திகள்', 'Get the latest Tamil news every morning', 'ஒவ்வொரு காலையும் சமீபத்திய தமிழ் செய்திகளைப் பெறுங்கள்', 'daily', '06:00'::TIME, 'newspaper'\nWHERE NOT EXISTS (SELECT 1 FROM news_categories WHERE name = 'Daily Tamil News');\n\nINSERT INTO news_categories (name, name_tamil, description, description_tamil, schedule, delivery_time, icon)\nSELECT 'Weekly Tech Updates', 'வாராந்திர தொழில்நுட்ப செய்திகள்', 'Technology news and updates every Monday', 'ஒவ்வொரு திங்களும் தொழில்நுட்ப செய்திகள்', 'weekly', '09:00'::TIME, 'cpu'\nWHERE NOT EXISTS (SELECT 1 FROM news_categories WHERE name = 'Weekly Tech Updates');\n\nINSERT INTO news_categories (name, name_tamil, description, description_tamil, schedule, delivery_time, icon)\nSELECT 'Monthly Cinema Digest', 'மாதாந்திர சினிமா செய்திகள்', 'Tamil cinema news and reviews monthly', 'மாதாந்திர தமிழ் சினிமா செய்திகள் மற்றும் விமர்சனங்கள்', 'monthly', '10:00'::TIME, 'film'\nWHERE NOT EXISTS (SELECT 1 FROM news_categories WHERE name = 'Monthly Cinema Digest');\n\nINSERT INTO news_categories (name, name_tamil, description, description_tamil, schedule, delivery_time, icon)\nSELECT 'Sports Weekly', 'வாராந்திர விளையாட்டு செய்திகள்', 'Sports news every Saturday', 'ஒவ்வொரு சனிக்கிழமையும் விளையாட்டு செய்திகள்', 'weekly', '08:00'::TIME, 'trophy'\nWHERE NOT EXISTS (SELECT 1 FROM news_categories WHERE name = 'Sports Weekly');\n\nINSERT INTO news_categories (name, name_tamil, description, description_tamil, schedule, delivery_time, icon)\nSELECT 'Business & Finance', 'வணிகம் மற்றும் நிதி', 'Daily business and market updates', 'தினசரி வணிக மற்றும் சந்தை செய்திகள்', 'daily', '07:00'::TIME, 'trending-up'\nWHERE NOT EXISTS (SELECT 1 FROM news_categories WHERE name = 'Business & Finance');\n`;\n\nreturn [{\n  json: {\n    // Pass config forward\n    supabase_url: config.SUPABASE_URL,\n    supabase_key: config.SUPABASE_SERVICE_KEY,\n    resend_api_key: config.RESEND_API_KEY,\n    from_email: config.FROM_EMAIL,\n    // SQL statements\n    create_tables_sql: createTablesSql,\n    seed_categories_sql: seedCategoriesSql,\n    // Original request\n    request_body: webhookData.body\n  }\n}];"
+      },
+      "id": "prepare-setup",
+      "name": "Prepare Setup SQLs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [690, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.supabase_url }}/rest/v1/rpc/exec_sql",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.supabase_key }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.supabase_key }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"sql\": {{ JSON.stringify($json.create_tables_sql) }} }",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "execute-create-tables",
+      "name": "Execute Create Tables SQL",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [910, 300],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get data from previous nodes\nconst prepareData = $('Prepare Setup SQLs').first().json;\n\n// Continue regardless of SQL result (tables may already exist)\nreturn [{\n  json: {\n    setup_attempted: true,\n    supabase_url: prepareData.supabase_url,\n    supabase_key: prepareData.supabase_key,\n    resend_api_key: prepareData.resend_api_key,\n    from_email: prepareData.from_email,\n    seed_categories_sql: prepareData.seed_categories_sql,\n    request_body: prepareData.request_body\n  }\n}];"
+      },
+      "id": "check-create-result",
+      "name": "Process Create Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1130, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.supabase_url }}/rest/v1/rpc/exec_sql",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.supabase_key }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.supabase_key }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"sql\": {{ JSON.stringify($json.seed_categories_sql) }} }",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "execute-seed-categories",
+      "name": "Seed News Categories",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1350, 300],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// GENERATE OTP CODE\n// ============================================\n\n// Get data from Process Create Result node\nconst prevData = $('Process Create Result').first().json;\nconst body = prevData.request_body;\nconst email = body?.email;\n\n// Validate email format\nconst emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\nif (!email || !emailRegex.test(email)) {\n  return [{\n    json: {\n      valid: false,\n      error: 'Invalid email address',\n      error_tamil: 'தவறான மின்னஞ்சல் முகவரி'\n    }\n  }];\n}\n\n// Generate 6-digit OTP\nconst otp = Math.floor(100000 + Math.random() * 900000).toString();\n\n// Calculate expiry time (10 minutes from now)\nconst expiresAt = new Date(Date.now() + 10 * 60 * 1000).toISOString();\n\nreturn [{\n  json: {\n    valid: true,\n    email: email,\n    otp: otp,\n    expires_at: expiresAt,\n    created_at: new Date().toISOString(),\n    // Pass config forward\n    supabase_url: prevData.supabase_url,\n    supabase_key: prevData.supabase_key,\n    resend_api_key: prevData.resend_api_key,\n    from_email: prevData.from_email\n  }\n}];"
+      },
+      "id": "generate-otp",
+      "name": "Generate OTP Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1570, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ]
+        }
+      },
+      "id": "email-valid-check",
+      "name": "Email Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1790, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.supabase_url }}/rest/v1/otp_codes",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.supabase_key }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $json.supabase_key }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"email\": \"{{ $json.email }}\",\n  \"otp_code\": \"{{ $json.otp }}\",\n  \"expires_at\": \"{{ $json.expires_at }}\",\n  \"is_used\": false\n}",
+        "options": {}
+      },
+      "id": "store-otp",
+      "name": "Store OTP in Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2010, 200]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{ $('Generate OTP Code').first().json.resend_api_key }}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"from\": \"{{ $('Generate OTP Code').first().json.from_email }}\",\n  \"to\": \"{{ $('Generate OTP Code').first().json.email }}\",\n  \"subject\": \"உங்கள் OTP குறியீடு - Tamil Newsletter\",\n  \"html\": \"<div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #FFF8E7;'><div style='text-align: center; padding: 20px; background-color: #8B0000; border-radius: 10px 10px 0 0;'><h1 style='color: #D4AF37; margin: 0; font-size: 28px;'>தமிழ் செய்திமடல்</h1><p style='color: #FFF8E7; margin: 5px 0 0 0;'>Tamil Newsletter</p></div><div style='padding: 30px; background-color: white; border: 1px solid #D4AF37;'><h2 style='color: #8B0000; text-align: center;'>வணக்கம்! 🙏</h2><p style='color: #333; font-size: 16px; text-align: center;'>உங்கள் OTP குறியீடு கீழே உள்ளது:</p><div style='text-align: center; margin: 30px 0;'><span style='font-size: 36px; font-weight: bold; color: #8B0000; background-color: #FFF8E7; padding: 15px 30px; border-radius: 10px; border: 2px dashed #D4AF37; letter-spacing: 8px;'>{{ $('Generate OTP Code').first().json.otp }}</span></div><p style='color: #666; font-size: 14px; text-align: center;'>இந்த குறியீடு <strong>10 நிமிடங்களில்</strong> காலாவதியாகும்.</p><hr style='border: none; border-top: 1px solid #D4AF37; margin: 20px 0;'><p style='color: #888; font-size: 12px; text-align: center;'>Your OTP code is: <strong>{{ $('Generate OTP Code').first().json.otp }}</strong><br>This code expires in 10 minutes.</p><p style='color: #888; font-size: 11px; text-align: center; margin-top: 20px;'>நீங்கள் இந்த கோரிக்கையை செய்யவில்லை என்றால், இந்த மின்னஞ்சலை புறக்கணிக்கவும்.<br>If you didn't request this, please ignore this email.</p></div><div style='text-align: center; padding: 15px; background-color: #8B0000; border-radius: 0 0 10px 10px;'><p style='color: #FFF8E7; margin: 0; font-size: 12px;'>© 2024 Tamil Newsletter. All rights reserved.</p></div></div>\"\n}",
+        "options": {}
+      },
+      "id": "send-email-resend",
+      "name": "Send OTP Email via Resend",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2230, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "const resendResponse = $input.first().json;\n\nif (resendResponse.id) {\n  return [{\n    json: {\n      success: true,\n      message: 'OTP sent successfully',\n      message_tamil: 'OTP வெற்றிகரமாக அனுப்பப்பட்டது',\n      email_id: resendResponse.id\n    }\n  }];\n} else {\n  return [{\n    json: {\n      success: false,\n      error: resendResponse.message || resendResponse.error || 'Failed to send email',\n      error_tamil: 'மின்னஞ்சல் அனுப்புவதில் தோல்வி',\n      details: resendResponse\n    }\n  }];\n}"
+      },
+      "id": "format-response",
+      "name": "Format Success Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2450, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    success: false,\n    error: 'Invalid email address',\n    error_tamil: 'தவறான மின்னஞ்சல் முகவரி'\n  }\n}];"
+      },
+      "id": "invalid-email-response",
+      "name": "Invalid Email Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2010, 400]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-webhook",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2670, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {
+          "responseCode": "400",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "respond-invalid-email",
+      "name": "Respond Invalid Email",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2230, 400]
+    }
+  ],
+  "connections": {
+    "Webhook - Receive OTP Request": {
+      "main": [
+        [
+          {
+            "node": "⚙️ CONFIG - Edit Your Keys Here",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⚙️ CONFIG - Edit Your Keys Here": {
+      "main": [
+        [
+          {
+            "node": "Prepare Setup SQLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Setup SQLs": {
+      "main": [
+        [
+          {
+            "node": "Execute Create Tables SQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Create Tables SQL": {
+      "main": [
+        [
+          {
+            "node": "Process Create Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Create Result": {
+      "main": [
+        [
+          {
+            "node": "Seed News Categories",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Seed News Categories": {
+      "main": [
+        [
+          {
+            "node": "Generate OTP Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate OTP Code": {
+      "main": [
+        [
+          {
+            "node": "Email Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Valid?": {
+      "main": [
+        [
+          {
+            "node": "Store OTP in Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Invalid Email Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store OTP in Supabase": {
+      "main": [
+        [
+          {
+            "node": "Send OTP Email via Resend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send OTP Email via Resend": {
+      "main": [
+        [
+          {
+            "node": "Format Success Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Success Response": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Invalid Email Response": {
+      "main": [
+        [
+          {
+            "node": "Respond Invalid Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "tamil-newsletter"
+    },
+    {
+      "name": "authentication"
+    },
+    {
+      "name": "cloud-compatible"
+    }
+  ]
+}

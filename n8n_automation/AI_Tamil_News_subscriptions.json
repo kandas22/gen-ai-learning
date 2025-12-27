@@ -1,0 +1,493 @@
+{
+  "name": "Final_Weekend_Task1",
+  "nodes": [
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -768,
+        48
+      ],
+      "id": "8519a38d-4e11-4df3-a3c5-429bc2eca99b",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Generate a 2-3 sentence summary IN TAMIL (தமிழ்) for each headline below.\n\nHEADLINES:\n{{ $json.items.map((item, i) => `${i + 1}. ${item.headline}`).join('\\n') }}\n\nReturn ONLY a valid JSON array of Tamil summaries in the exact same order:\n[\"தமிழ் சுருக்கம் 1\", \"தமிழ் சுருக்கம் 2\", ...]\n\nRULES:\n- Each summary: 2-3 sentences IN TAMIL\n- Output: Valid JSON array of strings only\n- No markdown, no code blocks, no explanations\n- Exactly {{ $json.items.length }} summaries required\n- ALL summaries must be in Tamil language (தமிழ்)",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You are a Tamil news summarizer. Your ONLY task is to generate summaries in Tamil language for news items.\n\nSTRICT RULES:\n1. Return ONLY a JSON array of summary strings\n2. Summaries should be 2-3 sentences each IN TAMIL (தமிழ்)\n3. Maintain the EXACT same order as the input headlines\n4. Do NOT include headlines or URLs in your output\n5. Do NOT add any explanation or markdown formatting\n6. If headline is in English, still write summary in Tamil\n7. Use simple, clear Tamil that is easy to understand\n\nYou will receive headlines, and you return ONLY Tamil summaries in a JSON array format."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        -336,
+        400
+      ],
+      "id": "e57bbb36-6bd2-42ee-a7e2-c1affe40630c",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "url": "https://news.google.com/rss/search?q=tamil+nadu+news&hl=ta&gl=IN&ceid=IN:ta",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -1184,
+        256
+      ],
+      "id": "9000d195-24d0-4a5c-976b-8fd5604efd92",
+      "name": "News-Feed : TamilNadu"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -336,
+        592
+      ],
+      "id": "b061937e-528e-4b08-880c-558645d4247a",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "X80gDbqp60dFj4Nu",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════════════════════════\n// LATEST TRENDING NEWS FILTER v2.0\n// Filters last 24 hours, removes duplicates, sorts by recency\n// ═══════════════════════════════════════════════════════════════════════════════\n\nconst allItems = $input.all();\nconst now = new Date();\nconst last24Hours = new Date(now.getTime() - 24 * 60 * 60 * 1000);\n\n// Track seen headlines to remove duplicates\nconst seenHeadlines = new Set();\n\nconst processedItems = allItems\n  .filter(i => i.json.url || i.json.link)\n  .map(i => {\n    // Parse publication date from various possible fields\n    let pubDate = null;\n    const dateFields = ['pubDate', 'isoDate', 'date', 'published', 'updated'];\n    \n    for (const field of dateFields) {\n      if (i.json[field]) {\n        pubDate = new Date(i.json[field]);\n        if (!isNaN(pubDate.getTime())) break;\n      }\n    }\n    \n    return {\n      ...i,\n      parsedDate: pubDate,\n      headline: i.json.title || i.json.headline || ''\n    };\n  })\n  // Remove duplicates by headline\n  .filter(i => {\n    const normalizedHeadline = i.headline.toLowerCase().trim();\n    if (seenHeadlines.has(normalizedHeadline)) {\n      return false;\n    }\n    seenHeadlines.add(normalizedHeadline);\n    return true;\n  })\n  // Filter: Only last 24 hours\n  .filter(i => {\n    if (!i.parsedDate || isNaN(i.parsedDate.getTime())) {\n      return true; // Keep if no valid date\n    }\n    return i.parsedDate >= last24Hours;\n  })\n  // Sort: Newest first\n  .sort((a, b) => {\n    const dateA = a.parsedDate ? a.parsedDate.getTime() : 0;\n    const dateB = b.parsedDate ? b.parsedDate.getTime() : 0;\n    return dateB - dateA;\n  })\n  // Take top 10\n  .slice(0, 10)\n  // Clean up\n  .map(i => {\n    delete i.parsedDate;\n    delete i.headline;\n    return i;\n  });\n\n// If less than 10 items after filtering, log warning\nif (processedItems.length < 10) {\n  console.log(`Warning: Only ${processedItems.length} recent news items found`);\n}\n\nreturn processedItems;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        80
+      ],
+      "id": "85662a79-a40c-401b-a3a5-a3550f6f97a5",
+      "name": "Top-10-News-Input"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ═══════════════════════════════════════════════════════════════════════════════\n// TAMIL NEWSLETTER GENERATOR v4.0 - ENHANCED\n// Features: Tamil Date, AI Logo, Better Spacing, Dynamic Images\n// ═══════════════════════════════════════════════════════════════════════════════\n\n// Tamil month names\nconst TAMIL_MONTHS = [\n    'ஜனவரி', 'பிப்ரவரி', 'மார்ச்', 'ஏப்ரல்', 'மே', 'ஜூன்',\n    'ஜூலை', 'ஆகஸ்ட்', 'செப்டம்பர்', 'அக்டோபர்', 'நவம்பர்', 'டிசம்பர்'\n];\n\nconst TAMIL_DAYS = [\n    'ஞாயிறு', 'திங்கள்', 'செவ்வாய்', 'புதன்', 'வியாழன்', 'வெள்ளி', 'சனி'\n];\n\nfunction getTamilDate() {\n    const now = new Date();\n    const day = now.getDate();\n    const month = TAMIL_MONTHS[now.getMonth()];\n    const year = now.getFullYear();\n    const dayName = TAMIL_DAYS[now.getDay()];\n    \n    return {\n        full: `${dayName}, ${day} ${month} ${year}`,\n        short: `${day} ${month} ${year}`,\n        dayName: dayName,\n        day: day,\n        month: month,\n        year: year\n    };\n}\n\nfunction getIndianDate() {\n    const now = new Date();\n    return now.toLocaleDateString('en-IN', {\n        weekday: 'long',\n        day: 'numeric',\n        month: 'long',\n        year: 'numeric'\n    });\n}\n\nfunction truncateText(text, maxLength) {\n    if (!text || text.length <= maxLength) return text || '';\n    return text.substring(0, maxLength).trim() + '...';\n}\n\nfunction getCurrentSeason() {\n    const month = new Date().getMonth();\n    if (month >= 2 && month <= 4) return 'வசந்தம்'; // Spring\n    if (month >= 5 && month <= 7) return 'கோடை';   // Summer\n    if (month >= 8 && month <= 10) return 'இலையுதிர்'; // Autumn\n    return 'குளிர்காலம்'; // Winter\n}\n\nfunction safeUrl(url) {\n    if (!url || typeof url !== 'string') return null;\n    if (!url.startsWith('http://') && !url.startsWith('https://')) return null;\n    return url;\n}\n\n// Generate dynamic placeholder image with gradient\nfunction getNewsImage(category, index) {\n    const gradients = [\n        'linear-gradient(135deg, %23667eea 0%25, %23764ba2 100%25)',\n        'linear-gradient(135deg, %23f093fb 0%25, %23f5576c 100%25)',\n        'linear-gradient(135deg, %234facfe 0%25, %2300f2fe 100%25)',\n        'linear-gradient(135deg, %2343e97b 0%25, %2338f9d7 100%25)',\n        'linear-gradient(135deg, %23fa709a 0%25, %23fee140 100%25)',\n        'linear-gradient(135deg, %23a8edea 0%25, %23fed6e3 100%25)'\n    ];\n    \n    // Use picsum for random news images or placeholder\n    const imageUrls = [\n        'https://picsum.photos/seed/news1/500/280',\n        'https://picsum.photos/seed/news2/500/280',\n        'https://picsum.photos/seed/news3/500/280',\n        'https://picsum.photos/seed/tamil/500/280',\n        'https://picsum.photos/seed/india/500/280'\n    ];\n    \n    return imageUrls[index % imageUrls.length];\n}\n\n// SVG Logo for Tamil News\nfunction getLogoSVG() {\n    return `\n    <svg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\">\n        <defs>\n            <linearGradient id=\"logoGrad\" x1=\"0%\" y1=\"0%\" x2=\"100%\" y2=\"100%\">\n                <stop offset=\"0%\" style=\"stop-color:#a30000;stop-opacity:1\" />\n                <stop offset=\"100%\" style=\"stop-color:#ff6b6b;stop-opacity:1\" />\n            </linearGradient>\n        </defs>\n        <circle cx=\"30\" cy=\"30\" r=\"28\" fill=\"url(#logoGrad)\" stroke=\"#800000\" stroke-width=\"2\"/>\n        <text x=\"30\" y=\"38\" font-family=\"Georgia, serif\" font-size=\"24\" font-weight=\"bold\" fill=\"white\" text-anchor=\"middle\">த</text>\n    </svg>`;\n}\n\nfunction generateMagazineNewsletter(input) {\n    const item = input[0];\n    const items = item.json?.items || [];\n\n    if (items.length === 0) {\n        return [{ json: { html: `<h1>Newsletter</h1><p>No news items available.</p>` } }];\n    }\n\n    const tamilDate = getTamilDate();\n    const indianDate = getIndianDate();\n    const season = getCurrentSeason();\n    \n    // Allocate stories to layout positions\n    const leftStory1  = items[0] || {};\n    const leftStory2  = items[1] || {};\n    const mainStory   = items[2] || items[0] || {};\n    const rightStories = items.slice(3, 9); // 6 stories for \"What's On Now\"\n    const bottomStories = items.slice(9, 13); // Additional stories\n\n    const currentYear = new Date().getFullYear();\n\n    const html = `\n<!DOCTYPE html>\n<html>\n<head>\n<meta charset=\"UTF-8\">\n<title>தமிழ் செய்திகள் - ${tamilDate.short}</title>\n<style>\n@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Tamil:wght@400;600;700&display=swap');\n</style>\n</head>\n<body style=\"margin:0;padding:0;background:#f0f0f0;font-family:'Noto Sans Tamil', Georgia, serif;\">\n<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\">\n<tr><td align=\"center\">\n\n<table width=\"980\" cellpadding=\"0\" cellspacing=\"0\" style=\"background:#ffffff;font-family:'Noto Sans Tamil', Georgia, serif;\">\n\n<!-- HEADER WITH LOGO -->\n<tr>\n<td style=\"background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);padding:15px 30px;\">\n<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\">\n<tr>\n<td width=\"70\" valign=\"middle\">\n<!-- AI Generated Logo -->\n<div style=\"width:55px;height:55px;background:linear-gradient(135deg, #a30000 0%, #ff6b6b 100%);border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid #ffd700;\">\n<span style=\"font-size:28px;color:#fff;font-weight:bold;line-height:55px;text-align:center;display:block;width:100%;\">த</span>\n</div>\n</td>\n<td style=\"padding-left:15px;\">\n<div style=\"font-size:32px;font-weight:bold;color:#ffffff;letter-spacing:2px;\">தமிழ் செய்தி தினசரி</div>\n<div style=\"font-size:12px;color:#ffd700;letter-spacing:3px;margin-top:3px;\">TAMIL NEWS DAILY</div>\n</td>\n<td align=\"right\" style=\"text-align:right;\">\n<div style=\"color:#ffffff;font-size:13px;\">${tamilDate.full}</div>\n<div style=\"color:#aaa;font-size:11px;margin-top:3px;\">${indianDate}</div>\n<div style=\"color:#ffd700;font-size:10px;margin-top:3px;letter-spacing:2px;\">${season.toUpperCase()} பதிப்பு | இதழ் #247</div>\n</td>\n</tr>\n</table>\n</td>\n</tr>\n\n<!-- NAVIGATION -->\n<tr>\n<td style=\"background:#a30000;padding:10px 30px;\">\n<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\">\n<tr>\n<td style=\"font-size:11px;letter-spacing:2px;color:#fff;\">\n<a href=\"#\" style=\"color:#fff;text-decoration:none;margin-right:25px;\">முகப்பு</a>\n<a href=\"#\" style=\"color:#fff;text-decoration:none;margin-right:25px;\">தமிழ்நாடு</a>\n<a href=\"#\" style=\"color:#fff;text-decoration:none;margin-right:25px;\">சென்னை</a>\n<a href=\"#\" style=\"color:#fff;text-decoration:none;margin-right:25px;\">இந்தியா</a>\n<a href=\"#\" style=\"color:#fff;text-decoration:none;margin-right:25px;\">உலகம்</a>\n<a href=\"#\" style=\"color:#fff;text-decoration:none;margin-right:25px;\">வணிகம்</a>\n<a href=\"#\" style=\"color:#fff;text-decoration:none;\">சினிமா</a>\n</td>\n<td align=\"right\" style=\"color:#ffd700;font-size:11px;\">\n🔴 நேரலை செய்திகள்\n</td>\n</tr>\n</table>\n</td>\n</tr>\n\n<!-- MAIN CONTENT -->\n<tr>\n<td style=\"padding:0;\">\n<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\">\n<tr>\n\n<!-- LEFT COLUMN -->\n<td width=\"28%\" valign=\"top\" style=\"padding:20px;border-right:1px solid #e0e0e0;\">\n\n<div style=\"margin-bottom:25px;\">\n<div style=\"background:#a30000;color:#fff;font-size:10px;padding:5px 10px;display:inline-block;margin-bottom:10px;letter-spacing:1px;\">முக்கிய செய்தி</div>\n<h3 style=\"margin:0 0 10px;font-size:17px;line-height:1.4;font-weight:600;\">\n${\nsafeUrl(leftStory1.url)\n? `<a href=\"${leftStory1.url}\" style=\"color:#1a1a2e;text-decoration:none;\">${leftStory1.headline || 'செய்தி தலைப்பு'}</a>`\n: `${leftStory1.headline || 'செய்தி தலைப்பு'}`\n}\n</h3>\n<p style=\"font-style:italic;color:#a30000;font-size:12px;margin:0 0 10px;\">${leftStory1.source || 'தமிழ் செய்திகள்'}</p>\n<p style=\"font-size:13px;line-height:1.7;color:#444;margin:0;\">${truncateText(leftStory1.summary, 220)}</p>\n</div>\n\n<hr style=\"border:none;border-top:2px solid #a30000;margin:20px 0;\">\n\n<div>\n<div style=\"background:#16213e;color:#fff;font-size:10px;padding:5px 10px;display:inline-block;margin-bottom:10px;letter-spacing:1px;\">தொழில்நுட்பம்</div>\n<h3 style=\"margin:0 0 10px;font-size:17px;line-height:1.4;font-weight:600;\">\n${\nsafeUrl(leftStory2.url)\n? `<a href=\"${leftStory2.url}\" style=\"color:#1a1a2e;text-decoration:none;\">${leftStory2.headline || 'செய்தி தலைப்பு'}</a>`\n: `${leftStory2.headline || 'செய்தி தலைப்பு'}`\n}\n</h3>\n<p style=\"font-style:italic;color:#a30000;font-size:12px;margin:0 0 10px;\">${leftStory2.source || 'தமிழ் செய்திகள்'}</p>\n<p style=\"font-size:13px;line-height:1.7;color:#444;margin:0;\">${truncateText(leftStory2.summary, 220)}</p>\n</div>\n\n</td>\n\n<!-- CENTER COLUMN (MAIN STORY) -->\n<td width=\"44%\" valign=\"top\" style=\"padding:20px;\">\n\n<!-- Dynamic News Image -->\n<div style=\"position:relative;margin-bottom:20px;\">\n<img src=\"${getNewsImage('main', 0)}\" \n     style=\"width:100%;height:220px;object-fit:cover;border-radius:8px;\"\n     onerror=\"this.style.background='linear-gradient(135deg, #667eea 0%, #764ba2 100%)';this.style.height='220px';\">\n<div style=\"position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent, rgba(0,0,0,0.8));padding:20px;border-radius:0 0 8px 8px;\">\n<span style=\"background:#ffd700;color:#1a1a2e;font-size:10px;padding:4px 10px;font-weight:bold;letter-spacing:1px;\">📰 இன்றைய சிறப்பு</span>\n</div>\n</div>\n\n<h2 style=\"margin:0 0 12px;font-size:24px;line-height:1.3;font-weight:700;color:#1a1a2e;\">\n${\nsafeUrl(mainStory.url)\n? `<a href=\"${mainStory.url}\" style=\"color:#1a1a2e;text-decoration:none;\">${mainStory.headline || 'முக்கிய செய்தி'}</a>`\n: `${mainStory.headline || 'முக்கிய செய்தி'}`\n}\n</h2>\n\n<p style=\"font-style:italic;color:#a30000;font-size:13px;margin:0 0 15px;padding-bottom:15px;border-bottom:1px solid #eee;\">\n📍 ${mainStory.source || 'தமிழ்நாடு'} &nbsp;|&nbsp; 🕐 ${tamilDate.dayName}, ${tamilDate.day} ${tamilDate.month}\n</p>\n\n<p style=\"font-size:15px;line-height:1.8;color:#333;margin:0 0 20px;\">${mainStory.summary || 'செய்தி விவரங்கள் இங்கே காட்டப்படும்.'}</p>\n\n${\nsafeUrl(mainStory.url)\n? `<a href=\"${mainStory.url}\" style=\"display:inline-block;background:#a30000;color:#fff;padding:12px 25px;text-decoration:none;font-size:13px;font-weight:bold;border-radius:5px;letter-spacing:1px;\">முழு செய்தி படிக்க →</a>`\n: `<span style=\"color:#999;\">இணைப்பு கிடைக்கவில்லை</span>`\n}\n\n</td>\n\n<!-- RIGHT COLUMN - What's On Now (MORE STORIES with better spacing) -->\n<td width=\"28%\" valign=\"top\" style=\"background:linear-gradient(180deg, #fff5f5 0%, #ffe8e8 100%);padding:0;\">\n\n<div style=\"background:linear-gradient(135deg, #a30000 0%, #c0392b 100%);color:#fff;padding:18px;text-align:center;\">\n<div style=\"font-size:10px;letter-spacing:3px;margin-bottom:5px;color:#ffd700;\">🔥 HOT NEWS</div>\n<div style=\"font-size:16px;font-weight:bold;letter-spacing:1px;\">இப்போது நடப்பவை</div>\n</div>\n\n<div style=\"padding:20px 18px;\">\n${rightStories.map((story, index) => `\n<div style=\"margin-bottom:18px;padding-bottom:18px;${index < rightStories.length - 1 ? 'border-bottom:1px dashed #e0b4b4;' : ''}\">\n<div style=\"display:flex;align-items:flex-start;\">\n<div style=\"background:linear-gradient(135deg, #a30000, #ff6b6b);color:#fff;font-size:11px;font-weight:bold;padding:3px 8px;border-radius:3px;margin-right:10px;min-width:20px;text-align:center;\">${index + 1}</div>\n<div style=\"flex:1;\">\n<a href=\"${safeUrl(story.url) || '#'}\" style=\"color:#1a1a2e;text-decoration:none;font-size:13px;font-weight:600;line-height:1.5;display:block;margin-bottom:8px;\">\n${truncateText(story.headline, 55)}\n</a>\n<p style=\"font-size:11px;line-height:1.6;color:#666;margin:0;\">${truncateText(story.summary, 75)}</p>\n</div>\n</div>\n</div>\n`).join('')}\n</div>\n\n<!-- Trending Tags -->\n<div style=\"padding:15px 18px;background:#a30000;\">\n<div style=\"color:#fff;font-size:10px;letter-spacing:2px;margin-bottom:10px;\">🏷️ TRENDING</div>\n<div>\n<span style=\"display:inline-block;background:rgba(255,255,255,0.2);color:#fff;font-size:10px;padding:5px 10px;border-radius:15px;margin:3px;\">#தமிழ்நாடு</span>\n<span style=\"display:inline-block;background:rgba(255,255,255,0.2);color:#fff;font-size:10px;padding:5px 10px;border-radius:15px;margin:3px;\">#சென்னை</span>\n<span style=\"display:inline-block;background:rgba(255,255,255,0.2);color:#fff;font-size:10px;padding:5px 10px;border-radius:15px;margin:3px;\">#இந்தியா</span>\n</div>\n</div>\n\n</td>\n\n</tr>\n</table>\n</td>\n</tr>\n\n<!-- BOTTOM STORIES ROW -->\n${bottomStories.length > 0 ? `\n<tr>\n<td style=\"padding:25px 30px;border-top:3px solid #1a1a2e;background:#fafafa;\">\n<div style=\"display:flex;align-items:center;margin-bottom:20px;\">\n<div style=\"background:#1a1a2e;color:#ffd700;font-size:11px;padding:8px 15px;font-weight:bold;letter-spacing:2px;\">மேலும் செய்திகள்</div>\n<div style=\"flex:1;height:1px;background:#ddd;margin-left:15px;\"></div>\n</div>\n<table width=\"100%\" cellpadding=\"0\" cellspacing=\"0\">\n<tr>\n${bottomStories.map((story, index) => `\n<td width=\"${100/bottomStories.length}%\" valign=\"top\" style=\"padding-right:20px;\">\n<div style=\"background:#fff;padding:15px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.05);height:100%;\">\n<div style=\"background:${['#a30000', '#16213e', '#2e7d32', '#c2185b'][index % 4]};color:#fff;font-size:9px;padding:3px 8px;display:inline-block;margin-bottom:10px;border-radius:3px;letter-spacing:1px;\">\n${['செய்தி', 'வணிகம்', 'விளையாட்டு', 'சினிமா'][index % 4]}\n</div>\n<a href=\"${safeUrl(story.url) || '#'}\" style=\"color:#1a1a2e;font-weight:600;text-decoration:none;font-size:13px;line-height:1.4;display:block;margin-bottom:8px;\">\n${truncateText(story.headline, 50)}\n</a>\n<p style=\"font-size:11px;color:#666;line-height:1.5;margin:0;\">${truncateText(story.summary, 65)}</p>\n</div>\n</td>\n`).join('')}\n</tr>\n</table>\n</td>\n</tr>\n` : ''}\n\n<!-- FOOTER -->\n<tr>\n<td style=\"background:linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);padding:30px;text-align:center;\">\n<div style=\"margin-bottom:15px;\">\n<div style=\"display:inline-block;width:50px;height:50px;background:linear-gradient(135deg, #a30000 0%, #ff6b6b 100%);border-radius:50%;line-height:50px;border:2px solid #ffd700;\">\n<span style=\"font-size:24px;color:#fff;font-weight:bold;\">த</span>\n</div>\n</div>\n<div style=\"font-size:20px;color:#fff;font-weight:bold;margin-bottom:5px;\">தமிழ் செய்தி தினசரி</div>\n<div style=\"font-size:11px;color:#ffd700;letter-spacing:2px;margin-bottom:20px;\">TAMIL NEWS DAILY</div>\n<div style=\"font-size:11px;color:#aaa;margin-bottom:15px;\">\n<a href=\"#\" style=\"color:#fff;text-decoration:none;margin:0 10px;\">முகப்பு</a> |\n<a href=\"#\" style=\"color:#fff;text-decoration:none;margin:0 10px;\">எங்களைப் பற்றி</a> |\n<a href=\"#\" style=\"color:#fff;text-decoration:none;margin:0 10px;\">தொடர்பு</a> |\n<a href=\"#\" style=\"color:#fff;text-decoration:none;margin:0 10px;\">குழுவிலகு</a>\n</div>\n<div style=\"font-size:10px;color:#666;\">\nநீங்கள் இந்த செய்திமடலை பெறுகிறீர்கள், ஏனெனில் நீங்கள் சந்தா செலுத்தியுள்ளீர்கள்.<br>\n© ${currentYear} தமிழ் செய்தி தினசரி. அனைத்து உரிமைகளும் பாதுகாக்கப்பட்டவை.\n</div>\n</td>\n</tr>\n\n</table>\n\n</td></tr>\n</table>\n</body>\n</html>\n`;\n\n    return [{ json: { html } }];\n}\n\n// ─── N8N EXECUTION ────────────────────────────────────────────────────────────\n\nreturn generateMagazineNewsletter($input.all());"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        80
+      ],
+      "id": "e6e67746-d97e-4a9c-840c-7047dadd437b",
+      "name": "HTML Code"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      items: $input.all().map(i => {\n        // Get URL - RSS feeds use 'link', not 'url'\n        const url = i.json.url || i.json.link || i.json.href || null;\n        \n        // Get headline\n        const headline = i.json.title || i.json.headline || 'Untitled';\n        \n        // Extract source from title if not available\n        let source = i.json.source || '';\n        if (!source && headline.includes(' - ')) {\n          const parts = headline.split(' - ');\n          source = parts[parts.length - 1].trim();\n        }\n        \n        // Get summary from available fields\n        const summary = i.json.summary || i.json.description || i.json.contentSnippet || '';\n        \n        return {\n          headline: headline,\n          url: url,\n          source: source,\n          summary: summary\n        };\n      })\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -288,
+        80
+      ],
+      "id": "c6dedad3-fe12-467e-83ba-e86a6e1ff031",
+      "name": "Normalize Input"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse summaries from LLM output\nconst summaries = JSON.parse($json.text);\n\n// Get original data from 'Normalize Input' node (correct node name!)\nconst originalItems = $('Normalize Input').first().json.items;\n\n// Merge: Original headlines + URLs + New summaries\nconst result = originalItems.map((item, index) => ({\n  headline: item.headline,\n  url: item.url,\n  source: item.source,\n  summary: summaries[index] || \"Summary unavailable\"\n}));\n\nreturn [{ json: { items: result } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        80
+      ],
+      "id": "95b4ecac-6703-4757-8d2f-07e9a746cf9e",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://hcti.io/v1/image",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={ \"html\": {{ JSON.stringify($json.html) }} }",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        272,
+        -48
+      ],
+      "id": "c11189d9-9d69-44da-a3a1-3ea97d43b79b",
+      "name": "HTTP Request",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "Ds5Ycz8iPD2PHfQ7",
+          "name": "htmlcss_api"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0A1WCL1LBG",
+          "mode": "list",
+          "cachedResultName": "genai4-titans"
+        },
+        "text": "={{ $json.url }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        832,
+        -48
+      ],
+      "id": "1e0cb837-c0ce-4568-8a7f-e3b41273e414",
+      "name": "Message to Slack",
+      "webhookId": "d2063057-57fd-4007-85c2-511b0e325ab6",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "kH1DU7C2Vzr6Nlp4",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $json['Email ID'] }}",
+        "subject": "Top 5 News",
+        "message": "={{ $('HTML Code').item.json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        656,
+        80
+      ],
+      "id": "daeda84e-7f74-41f7-98bd-386f55ec5f60",
+      "name": "Send_Email",
+      "webhookId": "3fea4506-e30f-4444-b40e-7c8783ff15a8",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "TbCf98kYvX0ymEem",
+          "name": "vijay_mail"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 6
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1200,
+        -256
+      ],
+      "id": "5f5a1686-5f22-4665-b072-3722feb08dc7",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "https://news.google.com/rss/search?q=tamil+nadu+politics+when:1d&hl=ta&gl=IN&ceid=IN:ta",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -1184,
+        112
+      ],
+      "id": "d3a2a187-6f97-4634-a126-12d1dcfa2c67",
+      "name": "News-Feed : TN Politics"
+    },
+    {
+      "parameters": {
+        "url": "https://news.google.com/rss/search?q=tamil+nadu+sports+when:1d&hl=ta&gl=IN&ceid=IN:ta",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -1184,
+        -80
+      ],
+      "id": "66bf5d8e-41bd-4aea-b2f1-941fcc800058",
+      "name": "News-Feed : Tamil-Sports"
+    },
+    {
+      "parameters": {
+        "url": "https://news.google.com/rss/search?q=tamil+nadu+breaking+news+when:1d&hl=ta&gl=IN&ceid=IN:ta",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -992,
+        -256
+      ],
+      "id": "31094b01-e86a-44b5-80d3-b44015dd79a4",
+      "name": "RSS Read"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "15aIvq-O7YVu0zJSHGPSv6ZCl6kkpBlLBu0D00sIApys",
+          "mode": "list",
+          "cachedResultName": "trigger_email",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/15aIvq-O7YVu0zJSHGPSv6ZCl6kkpBlLBu0D00sIApys/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "User_email_ids",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/15aIvq-O7YVu0zJSHGPSv6ZCl6kkpBlLBu0D00sIApys/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        432,
+        80
+      ],
+      "id": "deb42479-b323-4976-9f4a-8840a3c754d5",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gHqJtcsf9lq9qWZd",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Top-10-News-Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "News-Feed : TamilNadu": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Top-10-News-Input": {
+      "main": [
+        [
+          {
+            "node": "Normalize Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTML Code": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Input": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "HTML Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Message to Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message to Slack": {
+      "main": [
+        []
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "News-Feed : Tamil-Sports",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "News-Feed : TN Politics",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "News-Feed : TamilNadu",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "RSS Read",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "News-Feed : TN Politics": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "News-Feed : Tamil-Sports": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "RSS Read": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send_Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4194e132-aea2-4b1c-bc32-5684860b42bc",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "5f9b6eb8155a5a3f0b828889f6244c9686c3146a6b0aabec6523c1e88dc4ea37"
+  },
+  "id": "RcVubusFV8J5pW1z",
+  "tags": []
+}

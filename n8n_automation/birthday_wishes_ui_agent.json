@@ -1,0 +1,213 @@
+{
+  "name": "n8n_automation - UI AI Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You are professional email writter, send a birthday wish with calm and warm tone\nCall gmail tool or general reply based on user query: {\"body\":{\"query\":\"{{ $json.body.query }}\"}}",
+        "options": {
+          "systemMessage": "You are an intelligent assistant with access to a Gmail tool.\n\nGoal:\nSend a warm and friendly birthday wish email to the specified recipient.\n\nStep-by-step reasoning (Tree of Thought):\n1. Understand the recipient details:\n   - Recipient email address\n   - Recipient name\n   - Relationship to sender (friend, colleague, family, etc.)\n\n2. Draft a birthday message:\n   - Friendly and positive tone\n   - Personalized with the recipient’s name\n   - Short and warm (avoid overly long content)\n\n3. Prepare the email:\n   - Subject: \"Happy Birthday 🎉\"\n   - Body: Include the birthday message\n\n4. Use the Gmail tool to send the email:\n   - To: recipient email\n   - Subject: prepared subject line\n   - RecipientName: Get a username from the specified email\n   - Body: prepared birthday message\n   - Sender: Kanda - GenAI4Titans\nConstraints:\n- Be polite, cheerful, and natural\n- Remove starting with Dear and beginning with Wisheses\n- Do not include system or reasoning text in the email body\n- Confirm successful sending after the Gmail tool executes\n- Remove Warm from body\n\n\nNow, proceed and call the Gmail tool to send the birthday email.\n\n\nWishing you a very happy birthday filled with peace, joy, and warmth. May your day be as wonderful and calm as you are, surrounded by the people and moments that bring you true happiness. Take care and enjoy every moment of your special day. Warm wishes."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -736,
+        -64
+      ],
+      "id": "fdf06ff5-d9e5-4907-ac90-f636d9bd1682",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -736,
+        112
+      ],
+      "id": "61528a69-45b1-4ee1-b835-55c9268f33e5",
+      "name": "OpenAI Chat Model",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=global_memory"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -608,
+        240
+      ],
+      "id": "e60b4499-a082-4997-86b8-7172fb13bc2b",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 816,
+        "width": 2000,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1376,
+        -352
+      ],
+      "typeVersion": 1,
+      "id": "2cd2de54-64b3-490b-9487-6bb7b6080a16",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "agentv1",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1120,
+        -64
+      ],
+      "id": "26a10ce4-2047-4166-b2c4-53a64e9d9ea2",
+      "name": "Webhook",
+      "webhookId": "e491a0cf-6d32-462e-88f7-011d1548b256"
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -16,
+        -80
+      ],
+      "id": "4d6b8b5a-fad7-45ed-9f47-261aee2df576",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Send a message in Gmail",
+        "sendTo": "={{$json[\"body\"] && Array.isArray($json.body) ? $json.body[0].body.query : $json.body.query}}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "=<!DOCTYPE html>\n<html>\n<head>\n<style>\n  /* Basic resets */\n  body { margin: 0; padding: 0; }\n</style>\n</head>\n<body style=\"background-color: #f4f4f4; padding: 20px;\">\n\n  <div style=\"max-width: 600px; margin: 0 auto; background-color: #ffffff; border: 1px solid #dddddd; border-radius: 8px; font-family: 'Helvetica', 'Arial', sans-serif; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.05);\">\n    \n    <div style=\"background-color: #2c3e50; color: #ffffff; padding: 20px; text-align: center;\">\n      <h1 style=\"margin: 0; font-size: 24px; letter-spacing: 1px;\">🎉 Happy Birthday!</h1>\n    </div>\n\n    <div style=\"padding: 40px 30px; text-align: center; color: #333333;\">\n      <h2 style=\"margin-top: 0; color: #2c3e50; font-size: 20px;\">Dear User,</h2>\n      \n      <p style=\"font-size: 16px; line-height: 1.6; color: #555555; margin: 20px 0;\" align=\"center\">\n       {{ $fromAI('Message', ``, 'string') }}.</strong>\n      </p>\n      \n      <p style=\"font-size: 16px; line-height: 1.6; color: #555555; margin: 20px 0;\">\n        May this year bring you calm and happiness in all that you do.\n      </p>\n\n      <hr style=\"border: 0; border-top: 1px solid #eeeeee; margin: 30px 0;\">\n\n      <p style=\"font-size: 16px; font-style: italic; color: #777777; margin-bottom: 5px;\">\n        Warm regards,\n      </p>\n      <p style=\"font-size: 18px; font-weight: bold; color: #2c3e50; margin-top: 0;\">\n        Kanda - GenAI4Titans Team\n      </p>\n    </div>\n    \n  </div>\n\n</body>\n</html>\n",
+        "options": {
+          "senderName": "Kanda - GenAI4Titans"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        -400,
+        112
+      ],
+      "id": "7429cc7d-f9cb-40a9-9a3a-a1c6b4f06ebd",
+      "name": "Send a message in Gmail",
+      "webhookId": "72a006ec-dc29-45ab-94ab-723f6df52e93",
+      "credentials": {}
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "body": {
+            "query": "send a birthday wish to <YOUR_RECIPIENT_EMAIL>"
+          }
+        }
+      }
+    ]
+  },
+  "connections": {
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "e392d5d4-f752-446d-abbf-b46c987b3aed",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5560c8cbaa1f4e0a42266f42081145a8b8f9393bba28c3decb2c25e9c460056"
+  },
+  "n8n_meta": {
+    "description": "UI-driven birthday wishes agent. Configure OpenAI and Gmail credentials after importing.",
+    "author": "n8n_automation repo",
+    "requiredCredentialsNote": "Requires OpenAI and Gmail credentials. Add them in n8n credentials.",
+    "readme": "README.md"
+  },
+  "id": "tUhE1WWPn86Mv7Qk",
+  "tags": []
+}

@@ -1,0 +1,172 @@
+{
+  "name": "n8n_automation - AI Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hi there! 👋\nMy name is Kanda. How can I assist you today?",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -912,
+        -64
+      ],
+      "id": "6bd1b748-4e1a-4152-873c-92f305bcafdd",
+      "name": "When chat message received",
+      "webhookId": "d44c6bf5-ca62-48b4-be93-88bce3058c00"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are an intelligent assistant with access to a Gmail tool.\n\nGoal:\nSend a warm and friendly birthday wish email to the specified recipient.\n\nStep-by-step reasoning (Tree of Thought):\n1. Understand the recipient details:\n   - Recipient email address\n   - Recipient name\n   - Relationship to sender (friend, colleague, family, etc.)\n\n2. Draft a birthday message:\n   - Friendly and positive tone\n   - Personalized with recipient’s name\n   - Short and warm (avoid overly long content)\n\n3. Prepare the email:\n   - Subject: \"Happy Birthday 🎉\"\n   - Body: Include the birthday message\n\n4. Use the Gmail tool to send the email:\n   - To: recipient email\n   - Subject: prepared subject line\n   - Body: prepared birthday message\n\nConstraints:\n- Be polite, cheerful, and natural\n- Do not include system or reasoning text in the email body\n- Confirm successful sending after the Gmail tool executes\n\nNow proceed and call the Gmail tool to send the birthday email.\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        -736,
+        -64
+      ],
+      "id": "8c8af94b-d312-41b7-b9d5-d0ac9ff1b1dc",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -736,
+        112
+      ],
+      "id": "6163d218-9c1c-490a-ac62-b7edf538ff46",
+      "name": "OpenAI Chat Model",
+      "credentials": {}
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -608,
+        240
+      ],
+      "id": "bacd9985-eed6-4a1b-aa2c-da3f48413bbb",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "content": "",
+        "height": 816,
+        "width": 2000,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1376,
+        -352
+      ],
+      "typeVersion": 1,
+      "id": "f8a4a1f9-e5fd-4725-9db9-80cd3cddf611",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Send a message in Gmail",
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        -304,
+        144
+      ],
+      "id": "9b535f63-6f28-4902-ab0f-594a8d37d1f5",
+      "name": "Send a message in Gmail",
+      "webhookId": "9fb96f0f-9993-4b83-ad47-6f7adb9b2e78",
+      "credentials": {}
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        []
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6d0a3de0-249f-4e35-b3fe-018a9a666225",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e5560c8cbaa1f4e0a42266f42081145a8b8f9393bba28c3decb2c25e9c460056"
+  },
+  "n8n_meta": {
+    "description": "Simple AI agent that composes and sends emails via Gmail. Update OpenAI and Gmail credentials after import.",
+    "author": "n8n_automation repo",
+    "requiredCredentialsNote": "Requires OpenAI and Gmail OAuth credentials. Configure in n8n UI.",
+    "readme": "README.md"
+  },
+  "id": "lpgIYIWFOWfmB8On",
+  "tags": []
+}

@@ -1,6 +1,6 @@
 # N8N Automation Workflows
 
-This repository contains three N8N automation workflows designed to streamline communication, customer support, and promotional content generation.
+This repository contains multiple n8n automation workflows and demo examples designed to streamline communication, customer support, content generation, and AI tooling integration.
 
 ## 📋 Table of Contents
 
@@ -8,6 +8,7 @@ This repository contains three N8N automation workflows designed to streamline c
 - [Workflows](#workflows)
 - [Prerequisites](#prerequisites)
 - [Setup Instructions](#setup-instructions)
+- [How to Execute Workflows](#how-to-execute-workflows)
 - [Workflow Details](#workflow-details)
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
@@ -16,11 +17,19 @@ This repository contains three N8N automation workflows designed to streamline c
 
 ## 🎯 Overview
 
-This collection includes three automation workflows:
+This repository includes the following automation workflows (JSON exports):
 
-1. **Email Automation** - Automated thank you email system for homestay guests
-2. **Email to Slack Automation** - Customer support ticket system with Gmail to Slack integration
-3. **Slack Post Image Generator** - AI-powered promotional image generation from Slack messages
+1. **AI Voice Assistance** (`AI_voice_assitance.json`) - Telegram-based voice & text assistant that transcribes audio via OpenAI, runs through an LLM agent, and replies via Telegram (can optionally send emails).
+2. **Birthday Wishes UI Agent** (`birthday_wishes_ui_agent.json`) - UI/chat-triggered agent that drafts and sends birthday wishes via Gmail using OpenAI.
+3. **Email Automation** (`email_automation.json`) - Personalized thank you email generator using Google Sheets + OpenAI + Gmail.
+4. **Email to Slack Automation** (`email_to_slack_automation.json`) - Customer support flow: fetch Gmail messages, parse and append tickets to Google Sheets, and post formatted Slack notifications.
+5. **Image Analyser** (`image_analyser.json`) - Webhook-based image analysis using OpenAI vision; returns structured JSON analysis.
+6. **MCP Demo** (`MCP_demo.json`) - Multi-tool demonstration workflow (MCP/agent + Google Drive/Sheets/Docs + Gmail + SerpAPI) showcasing tool orchestration.
+7. **RAG Agent 2.0** (`rag_2.0.json`) - Retrieval-Augmented Generation pipeline using Google Drive, Pinecone vector store, OpenAI embeddings and LLM for question answering.
+8. **Simple AI Agent Send Email** (`simple_AI_agent_send_email.json`) - Chat-triggered AI agent that composes and sends an email via Gmail.
+9. **Slack Image Generation** (`slack_image_generation.json`) - Slack-triggered Gemini image generator that uploads the resulting image back to a channel.
+10. **Slack Post Image Builder** (`slackPost_nano_banana_image_builder.json`) - Slack historical message-driven Gemini image builder; pulls message text then generates and uploads a promotional image.
+11. **Telegram Trigger** (`telegram_trigger.json`) - Telegram-to-LLM reply flow: on Telegram message, send to LLM and reply with a generated response.
 
 ---
 
@@ -56,6 +65,70 @@ Manual Trigger → Gmail → Parse Email → Extract Data → Google Sheets → 
 Manual Trigger → Slack History → Google Gemini Image Generation → Slack Upload
 ```
 
+### 4. AI Voice Assistance (`AI_voice_assitance.json`)
+**Purpose**: Transcribe Telegram voice messages, process via OpenAI, reply via Telegram (can send notifications or emails).
+
+**Flow**:
+```
+Telegram Trigger → Transcribe (OpenAI) / Text → LLM Agent → Reply via Telegram (optional Gmail)
+```
+
+### 5. Birthday Wishes UI Agent (`birthday_wishes_ui_agent.json`)
+**Purpose**: Compose personalized birthday wishes using OpenAI and send via Gmail.
+
+**Flow**:
+```
+Webhook/UI Chat Trigger → OpenAI Agent → Gmail Tool
+```
+
+### 6. Image Analyser (`image_analyser.json`)
+**Purpose**: API endpoint / Webhook that accepts an image and returns structured analysis using OpenAI vision capabilities.
+
+**Flow**:
+```
+Webhook → OpenAI Vision/Analyze Image → Code Transform → Respond to Webhook
+```
+
+### 7. MCP Demo (`MCP_demo.json`)
+**Purpose**: Demonstration of multiple tools (MCP, SerpAPI, Drive/Sheets/Docs, Gmail) orchestrated via agent flows.
+
+**Flow**:
+```
+Chat Trigger / MCP Client → Agent → Tool Integrations (Drive, Docs, Gmail, SerpAPI) → Outputs
+```
+
+### 8. RAG Agent 2.0 (`rag_2.0.json`)
+**Purpose**: Retrieval-Augmented Generation flow for vectorizing documents and answering queries with Pinecone + OpenAI embeddings.
+
+**Flow**:
+```
+Google Drive Trigger → Download → Split → Embeddings → Pinecone Store → Query via LLM
+```
+
+### 9. Simple AI Agent Send Email (`simple_AI_agent_send_email.json`)
+**Purpose**: Minimal chat-based AI agent that composes and sends emails using Gmail.
+
+**Flow**:
+```
+Chat Trigger → LLM Agent → Gmail Tool
+```
+
+### 10. Slack Image Generation (`slack_image_generation.json`)
+**Purpose**: Realtime Slack mention-triggered Gemini image generation; uploads the generated image in the channel.
+
+**Flow**:
+```
+Slack Trigger → Google Gemini Image Generation → Upload File to Slack
+```
+
+### 11. Telegram Trigger (`telegram_trigger.json`)
+**Purpose**: Simple Telegram LLM reply flow: LLM chain processes messages and replies.
+
+**Flow**:
+```
+Telegram Trigger → LLM Chain → OpenAI Chat Model → Reply via Telegram
+```
+
 ---
 
 ## ✅ Prerequisites
@@ -83,6 +156,9 @@ Ensure the following N8N nodes are available:
 - Code (JavaScript)
 - Markdown
 - Manual Trigger
+
+**Important — use your own credentials:**
+- These workflows include references to external services (Google, Slack, OpenAI, Gemini, Telegram, etc.). You must create and use your own API keys and OAuth credentials in your n8n instance. Do NOT commit or share secret keys. Replace any placeholder values in nodes with your own credentials after importing the workflows.
 
 ---
 
@@ -131,14 +207,29 @@ Create a Google Sheet named `n8n_automation_user_tickets` with the following str
 
 ### Step 2: Import Workflows to N8N
 
-1. Open your N8N instance
-2. Click on **"Workflows"** in the left sidebar
-3. Click **"Import from File"** or **"Import from URL"**
-4. Select the JSON file(s):
-   - `email_automation.json`
-   - `email_to_slack_automation.json`
-   - `slackPost_nano_banana_image_builder.json`
-5. Click **"Import"**
+1. Open your n8n instance and click **Workflows** in the left sidebar.
+2. Click **Import** → **Import from File** (or **Import from URL** if you host the JSON files remotely).
+3. Select one or more JSON files from this repository to import. Files available:
+    - `AI_voice_assitance.json`
+    - `birthday_wishes_ui_agent.json`
+    - `email_automation.json`
+    - `email_to_slack_automation.json`
+    - `image_analyser.json`
+    - `MCP_demo.json`
+    - `rag_2.0.json`
+    - `simple_AI_agent_send_email.json`
+    - `slack_image_generation.json`
+    - `slackPost_nano_banana_image_builder.json`
+    - `telegram_trigger.json`
+4. Click **Import** to add the workflow(s) to your n8n workspace.
+5. After import, open each workflow and configure credentials for nodes that require them (Gmail, Google Sheets, Slack, OpenAI, Google Gemini, Telegram, etc.).
+
+Tips after importing:
+- Use **Credential > Create New** within each node to add your own OAuth/key credentials.
+- For Google APIs, ensure the service account or OAuth user has access to the target spreadsheets and Gmail.
+- For Slack workflows, install or invite the bot to target channels and copy the bot token into n8n credentials.
+- For OpenAI / Gemini, add API keys under the respective credential types in n8n.
+- If a node references a `documentId`, `channelId`, or other resource ID, update it to your own resource identifiers.
 
 ---
 
@@ -238,6 +329,73 @@ Create a Google Sheet named `n8n_automation_user_tickets` with the following str
 
 ---
 
+## ▶️ How to Execute Workflows
+
+After importing and configuring credentials, follow these steps to run any workflow in this repo:
+
+1. Open the imported workflow in the n8n editor.
+2. Verify and attach credentials for each node that requires them (Credentials → Create New). Always use your own API keys/OAuth — do not commit or share secrets.
+3. Update resource IDs and paths in nodes (examples: `documentId`, `sheetName`, `channelId`, `fileId`, webhook `path`).
+4. Run a test:
+    - If workflow contains a Manual Trigger: click **Execute Workflow** or trigger the Manual node.
+    - If workflow uses a platform trigger (Slack/Telegram/GDrive): perform the external action (post a message, send a Telegram message, upload a file) or use the trigger's test utility.
+    - For webhook workflows, send a test POST with `curl`:
+
+```bash
+curl -X POST "https://<your-n8n-host>/webhook/<your-webhook-path>" \
+   -H 'Content-Type: application/json' \
+   -d '{"test":"data"}'
+```
+
+5. Inspect the execution in n8n's Execution List, correct node errors, and re-run tests until successful.
+6. Toggle the workflow to **Active** when ready for production.
+
+Quick run notes for each workflow (after import & credentials):
+
+- `AI_voice_assitance.json` — attach Telegram/OpenAI creds; send a Telegram message to test.
+- `birthday_wishes_ui_agent.json` — attach OpenAI and Gmail creds; POST to webhook or use chat trigger to generate/send test email.
+- `email_automation.json` — set Google Sheets `documentId`, attach Google Sheets/Gmail/OpenAI creds; run Manual Trigger to send sample email.
+- `email_to_slack_automation.json` — attach Gmail/Google Sheets/Slack creds; send a test email to the monitored Gmail and execute the workflow.
+- `image_analyser.json` — attach OpenAI creds; POST a base64/binary image to the webhook to test analysis and response.
+- `MCP_demo.json` — attach needed tool creds (OpenAI, Google Drive/Sheets/Docs, Gmail); use chat triggers or MCP client endpoints for testing.
+- `rag_2.0.json` — attach Pinecone, Google Drive, and OpenAI creds; upload documents to the watched Drive folder and query the RAG agent.
+- `simple_AI_agent_send_email.json` — attach OpenAI and Gmail creds; use chat trigger to instruct the agent to send a test email.
+- `slack_image_generation.json` — attach Slack and Gemini creds; mention the bot or post in the configured channel to generate/upload images.
+- `slackPost_nano_banana_image_builder.json` — attach Gemini and Slack creds; run or post a message in the channel to generate images.
+- `telegram_trigger.json` — attach Telegram/OpenAI creds and message the bot to test the reply flow.
+
+Important: credentials are intentionally not embedded in these JSON files. Create credentials in the n8n UI and attach them to nodes after importing.
+
+---
+
+## ✅ Post-import Checklist
+Follow this checklist immediately after importing a workflow to avoid runtime errors:
+
+- **Replace placeholders**: Search each imported workflow for placeholder values and replace with your resource identifiers:
+   - `<YOUR_SPREADSHEET_ID>` for Google Sheets `documentId`
+   - `<YOUR_CHANNEL_ID>` for Slack `channelId`
+   - `<YOUR_DRIVE_FOLDER_ID>` for Google Drive folder watches
+   - `<YOUR_WEBHOOK_PATH>` for webhook nodes (if present)
+   - `<YOUR_MONITORED_EMAIL>` for Gmail sender filters
+- **Create credentials** in n8n for each external service (Gmail, Google Sheets, Slack, OpenAI, Google Gemini, Telegram, Pinecone, SerpAPI) and attach them to the corresponding nodes.
+- **Run node-level tests**: For OAuth nodes, use the built-in credential test (Authorize account) where available; ensure permissions/scopes match required actions.
+- **Execute a quick end-to-end test**: Use a single sample input (send test email, post Slack message, or POST to webhook) and follow the execution trace in n8n.
+- **Inspect results and logs**: Fix any mapping (column names, JSON paths) or permission errors and re-run tests.
+
+If you'd like, I can replace all remaining IDs and sample emails with placeholders (already done for major items) and provide a short validation script or sample `curl` payloads for webhook workflows.
+
+---
+
+## 🔧 Changes Made in This Repo
+- Added all workflows (11 total) to **Overview** and **Workflow Details** with one-line descriptions and quick-run notes.
+- Standardized top-level workflow names with `n8n_automation - ` prefix and added `n8n_meta` metadata to each JSON file.
+- **Removed embedded credentials** from workflow JSONs (replaced with empty `credentials` objects) to avoid leaking secrets.
+- Replaced key resource IDs (Google Sheet IDs, Slack channel IDs, Drive folder IDs, monitored email examples) with placeholders like `<YOUR_SPREADSHEET_ID>`, `<YOUR_CHANNEL_ID>`, `<YOUR_DRIVE_FOLDER_ID>`, and `<YOUR_MONITORED_EMAIL>`.
+
+If you want, I can also create a small script that checks all JSON files for remaining credential ids and lists them for manual review.
+
+---
+
 ## 📖 Workflow Details
 
 ### 1. Email Automation Workflow
@@ -316,6 +474,118 @@ Slack message: "Summer Sale - 50% Off All Courses"
 ```
 
 **Output**: Professional promotional poster uploaded to Slack
+
+---
+
+### 4. AI Voice Assistance Workflow
+
+**Use Case**: Telegram voice/text assistant for fast conversational automation (auto-replies, email notifications).
+
+**Process**:
+1. Telegram Trigger receives message (voice or text)
+2. If voice: Telegram Node `Get a file` -> OpenAI Transcribe (audio) -> set `text`
+3. LLM Agent processes the `text` and optionally stores/retrieves memory
+4. Workflow posts a reply back to Telegram; optionally uses Gmail to send messages
+
+**Customization Points**:
+- Model selection for transcription and chat
+- Memory/session keys for multi-turn conversations
+- Telegram webhook and bot configuration
+
+---
+
+### 5. Birthday Wishes UI Agent Workflow
+
+**Use Case**: Generate and send birthday wishes.
+
+**Process**:
+1. Chat or webhook trigger invokes the agent
+2. OpenAI agent drafts a personalized birthday message
+3. Gmail tool sends the email using configured credentials
+
+**Customization Points**:
+- Prompt style and template
+- Sender name and email formatting
+
+---
+
+### 6. Image Analyser Workflow
+
+**Use Case**: Provide structured image insights for incoming images.
+
+**Process**:
+1. Webhook receives image (binary or base64)
+2. OpenAI Image analysis runs over the binary input
+3. Code node parses/normalizes the analysis to a simple JSON response
+4. Webhook returns JSON to the caller
+
+**Customization Points**:
+- Adjust model and analyze options
+- Response structure mapping
+
+---
+
+### 7. MCP Demo Workflow
+
+**Use Case**: Demonstrates orchestration of tools and endpoints for custom AI pipelines.
+
+**Process**:
+1. Chat/MCP client triggers the workflow
+2. Agent orchestrates calls to SerpAPI, Google Drive/Docs/Sheets, Gmail, and other tools
+3. Returns outputs and triggers tool-specific actions
+
+**Customization Points**:
+- Which tools are active (toggle nodes)
+- Endpoint/URL for MCP client
+
+---
+
+### 8. RAG Agent 2.0 Workflow
+
+**Use Case**: Document ingestion & RAG queries with Pinecone + OpenAI embeddings.
+
+**Process**:
+1. Google Drive Trigger detects new documents
+2. Download and split documents
+3. Generate embeddings via OpenAI and insert into Pinecone
+4. Client queries are handled via LLM using recent context from Pinecone
+
+**Customization Points**:
+- Splitting strategy & overlap
+- Pinecone namespace and index settings
+
+---
+
+### 9. Simple AI Agent Send Email Workflow
+
+**Use Case**: Minimal example of a chat-based agent that can perform an email send operation.
+
+**Process**:
+1. Chat trigger receives a request
+2. Agent composes a subject and message
+3. Gmail tool sends the message
+
+---
+
+### 10. Slack Image Generation Workflow
+
+**Use Case**: Realtime image generation in response to Slack mentions.
+
+**Process**:
+1. Slack Th trigger or app mention
+2. Gemini image generation creates the image
+3. Upload file back to Slack channel or thread
+
+---
+
+### 11. Telegram Trigger Workflow
+
+**Use Case**: Quick LLM reply flow for Telegram messages using a simple chain
+
+**Process**:
+1. Telegram trigger receives message
+2. Chain LLM / OpenAI handles the prompt
+3. Reply message is sent via Telegram node
 
 ---
 
